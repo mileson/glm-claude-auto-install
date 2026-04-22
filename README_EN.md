@@ -66,6 +66,22 @@ docs/releases/
 
 ## Quick Start
 
+If you download from GitHub Releases, prefer the assets with these suffixes:
+
+- `【双击执行】.command` for macOS
+- `【下载后双击执行】.zip` for Windows
+
+The Windows zip bundle already includes both the clickable `.bat` launcher and the underlying `.ps1` file, so one download is enough.
+
+### Why do releases still show Source code (zip / tar.gz)
+
+Those are auto-generated source archives provided by GitHub, not manually uploaded installer files.
+
+If you only want the beginner-friendly installer, choose the assets whose names contain:
+
+- `【双击执行】`
+- `【下载后双击执行】`
+
 ### macOS
 
 #### Install GLM Coding Plan + Claude Code

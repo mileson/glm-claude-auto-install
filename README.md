@@ -69,6 +69,24 @@ docs/releases/
 
 ## 快速开始
 
+如果你是从 GitHub Releases 下载，优先选择这些后缀的文件：
+
+- `【双击执行】.command`：适用于 macOS
+- `【下载后双击执行】.zip`：适用于 Windows
+
+Windows 的 zip 压缩包里已经包含了可双击的 `.bat` 启动文件和底层 `.ps1` 脚本，用户只需要下载一个文件即可。
+
+### Release 里为什么还有 Source code (zip / tar.gz)
+
+这是 GitHub 自动附带的源码归档，不是我额外上传的安装文件。
+
+如果你只是想直接运行安装器，请优先下载带有：
+
+- `【双击执行】`
+- `【下载后双击执行】`
+
+这些后缀的文件。
+
 ### macOS
 
 #### 安装 GLM Coding Plan + Claude Code

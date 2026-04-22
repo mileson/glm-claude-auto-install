@@ -15,17 +15,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Build release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifacts/windows-glm release-artifacts/windows-codex release-artifacts/windows-cleanup
+
+          cp scripts/macos/install-glm-claude.command "release-artifacts/安装 GLM Claude（macOS）【双击执行】.command"
+          cp scripts/macos/install-openai-codex.command "release-artifacts/安装 OpenAI Codex（macOS）【双击执行】.command"
+          cp scripts/macos/cleanup-old-glm-managed-install.command "release-artifacts/清理旧版 GLM 环境（macOS）【双击执行】.command"
+
+          cp scripts/windows/install-glm-claude.bat "release-artifacts/windows-glm/安装 GLM Claude【双击执行】.bat"
+          cp scripts/windows/install-glm-claude.ps1 "release-artifacts/windows-glm/安装 GLM Claude.ps1"
+          (
+            cd release-artifacts/windows-glm
+            zip -q -r "../安装 GLM Claude（Windows）【下载后双击执行】.zip" .
+          )
+
+          cp scripts/windows/install-openai-codex.bat "release-artifacts/windows-codex/安装 OpenAI Codex【双击执行】.bat"
+          cp scripts/windows/install-openai-codex.ps1 "release-artifacts/windows-codex/安装 OpenAI Codex.ps1"
+          (
+            cd release-artifacts/windows-codex
+            zip -q -r "../安装 OpenAI Codex（Windows）【下载后双击执行】.zip" .
+          )
+
+          cp scripts/windows/cleanup-old-glm-managed-install.bat "release-artifacts/windows-cleanup/清理旧版 GLM 环境【双击执行】.bat"
+          cp scripts/windows/cleanup-old-glm-managed-install.ps1 "release-artifacts/windows-cleanup/清理旧版 GLM 环境.ps1"
+          (
+            cd release-artifacts/windows-cleanup
+            zip -q -r "../清理旧版 GLM 环境（Windows）【下载后双击执行】.zip" .
+          )
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: docs/releases/${{ github.ref_name }}.md
           files: |
-            scripts/macos/install-glm-claude.command
-            scripts/macos/cleanup-old-glm-managed-install.command
-            scripts/macos/install-openai-codex.command
-            scripts/windows/install-glm-claude.bat
-            scripts/windows/install-glm-claude.ps1
-            scripts/windows/cleanup-old-glm-managed-install.bat
-            scripts/windows/cleanup-old-glm-managed-install.ps1
-            scripts/windows/install-openai-codex.bat
-            scripts/windows/install-openai-codex.ps1
+            release-artifacts/*

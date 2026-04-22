@@ -75,6 +75,15 @@ GitHub applies filename compatibility rules to uploaded assets, so the Chinese `
 
 The Windows zip bundle already includes both the clickable `.bat` launcher and the underlying `.ps1` file, so one download is enough.
 
+Only four main installer assets are meant for most users:
+
+1. GLM Claude for macOS
+2. GLM Claude for Windows
+3. OpenAI Codex for macOS
+4. OpenAI Codex for Windows
+
+Cleanup scripts remain in the repository, but they are no longer meant to be part of the main release download area for beginners.
+
 ### Why do releases still show Source code (zip / tar.gz)
 
 Those are auto-generated source archives provided by GitHub, not manually uploaded installer files.
@@ -153,7 +162,7 @@ scripts\windows\cleanup-old-glm-managed-install.bat
 
 ## Release notes
 
-- [v0.1.3](./docs/releases/v0.1.3.md)
+- [v0.1.4](./docs/releases/v0.1.4.md)
 
 ## References
 

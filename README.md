@@ -59,15 +59,6 @@
 | macOS | [下载：OpenAI Codex 安装器（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-Double-Click.command) |
 | Windows | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip) |
 
-### 清理旧版 GLM 环境（可选）
-
-只有你以前装过旧版 GLM 本地托管 Node 环境时，才需要这个：
-
-| 系统 | 下载 |
-|---|---|
-| macOS | [下载：清理旧版 GLM 环境（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Cleanup-macOS-Double-Click.command) |
-| Windows | [下载：清理旧版 GLM 环境（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Cleanup-Windows-Download-Then-Double-Click.zip) |
-
 ---
 
 ### 第 3 步：下载后直接执行
@@ -88,6 +79,21 @@
 4. 如果系统弹出管理员授权，点击允许
 5. 根据窗口提示输入需要的信息
 6. 等它自动安装完成
+
+---
+
+## 为什么 release 里现在应该只保留 4 个主文件
+
+因为大多数用户真正需要的只有：
+
+1. mac 版智谱 Claude Code
+2. Windows 版智谱 Claude Code
+3. mac 版 OpenAI Codex
+4. Windows 版 OpenAI Codex
+
+清理旧版环境属于少数情况，不应该放在主下载区让新手分心。
+
+如果以后真的需要清理旧版 GLM 环境，可以直接到仓库里的 `scripts/` 目录获取对应脚本。
 
 ---
 
@@ -210,7 +216,7 @@
 
 ## 版本说明
 
-- [v0.1.3](./docs/releases/v0.1.3.md)
+- [v0.1.4](./docs/releases/v0.1.4.md)
 
 ## 参考资料
 

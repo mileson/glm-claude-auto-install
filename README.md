@@ -1,6 +1,6 @@
 # glm-claude-auto-install
 
-> 面向 macOS 和 Windows 的一键安装脚本集合：帮助用户快速安装 GLM Coding Plan + Claude Code，以及 OpenAI Codex CLI。
+> 给新手准备的一键安装工具页：按步骤下载、双击、输入信息，就能完成安装。
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-supported-black?logo=apple)](./scripts/macos)
@@ -10,155 +10,207 @@
 
 [English](./README_EN.md)
 
-## 这个项目能做什么
+## 先看这里
 
-这个仓库主要解决两类“新手首次安装”问题：
+这个仓库一共提供两类一键安装器：
 
-- 自动安装 **GLM Coding Plan + Claude Code**。
-- 自动安装 **OpenAI Codex CLI**，并引导用户填写代理地址和 API Key。
+1. **GLM Coding Plan + Claude Code**
+2. **OpenAI Codex CLI**
 
-如果用户电脑上没有完整的 Node.js 环境，脚本会先自动补齐，再继续安装 CLI 工具。
+如果你的电脑里还没有完整的 Node.js，安装器会先自动补齐，再继续安装。
 
-## 功能亮点
+---
 
-- 自动检测 `node`、`npm`、`npx` 是否可用。
-- 缺失时自动安装**系统级 Node.js**。
-- 将 CLI 工具安装为全局命令，方便直接使用。
-- 引导用户输入 API Key、Base URL、模型等必要配置。
-- 改写配置前自动备份旧文件。
-- 提供旧版 GLM 本地托管 Node 环境的清理脚本。
-- 同时提供 macOS 与 Windows 入口。
+## 新手只要 3 步
 
-## 支持的安装器
+### 第 1 步：先确认你要装哪个
 
-### 1. GLM Coding Plan + Claude Code
+#### 我要装 GLM Coding Plan + Claude Code
 
-适合需要把 GLM 编码套餐接入 Claude Code 的用户：
+适合：
 
-- 自动检测并安装 Node.js
-- 自动安装 Claude Code 与 Coding Helper
-- 自动写入 `coding-helper`、`~/.claude/settings.json`、`~/.claude.json`
+- 你要用智谱的 Coding Plan
+- 你要把套餐接到 Claude Code
 
-### 2. OpenAI Codex CLI
+#### 我要装 OpenAI Codex CLI
 
-适合需要通过自定义网关或兼容代理使用 Codex CLI 的用户：
+适合：
 
-- 自动安装 `@openai/codex`
-- 引导输入 Base URL、API Key、模型与 reasoning effort
-- 自动写入 `~/.codex/config.toml` 与 `~/.codex/auth.json`
+- 你要安装 Codex 命令行工具
+- 你有单独提供给用户的 Base URL 和 API Key
 
-## 项目结构
+---
 
-```text
-scripts/
-  macos/
-    install-glm-claude.command
-    cleanup-old-glm-managed-install.command
-    install-openai-codex.command
-  windows/
-    install-glm-claude.bat
-    install-glm-claude.ps1
-    cleanup-old-glm-managed-install.bat
-    cleanup-old-glm-managed-install.ps1
-    install-openai-codex.bat
-    install-openai-codex.ps1
-
-docs/releases/
-  v0.1.0.md
-```
+### 第 2 步：按你的系统点击下载
 
 ## 快速开始
 
-如果你是从 GitHub Releases 下载，优先选择名称里包含这些关键词的文件：
+### 安装 GLM Coding Plan + Claude Code
 
-- `Double-Click.command`：适用于 macOS
-- `Download-Then-Double-Click.zip`：适用于 Windows
+| 系统 | 下载 |
+|---|---|
+| macOS | [下载：GLM Claude 安装器（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-Double-Click.command) |
+| Windows | [下载：GLM Claude 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip) |
 
-GitHub 对发布资产文件名会做兼容处理，所以中文的 `【双击执行】` 说明主要放在资产标签里。
+### 安装 OpenAI Codex CLI
 
-Windows 的 zip 压缩包里已经包含了可双击的 `.bat` 启动文件和底层 `.ps1` 脚本，用户只需要下载一个文件即可。
+| 系统 | 下载 |
+|---|---|
+| macOS | [下载：OpenAI Codex 安装器（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-Double-Click.command) |
+| Windows | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip) |
 
-### Release 里为什么还有 Source code (zip / tar.gz)
+### 清理旧版 GLM 环境（可选）
 
-这是 GitHub 自动附带的源码归档，不是我额外上传的安装文件。
+只有你以前装过旧版 GLM 本地托管 Node 环境时，才需要这个：
 
-如果你只是想直接运行安装器，请优先下载带有：
+| 系统 | 下载 |
+|---|---|
+| macOS | [下载：清理旧版 GLM 环境（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Cleanup-macOS-Double-Click.command) |
+| Windows | [下载：清理旧版 GLM 环境（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Cleanup-Windows-Download-Then-Double-Click.zip) |
 
-- `Double-Click`
-- `Download-Then-Double-Click`
+---
 
-这些后缀的文件。
+### 第 3 步：下载后直接执行
 
-### macOS
+#### macOS
 
-#### 安装 GLM Coding Plan + Claude Code
+1. 下载 `.command` 文件到桌面或下载目录
+2. 双击运行
+3. 如果系统提示安全确认，按提示允许
+4. 根据窗口提示输入需要的信息
+5. 等它自动安装完成
 
-```bash
-chmod +x ./scripts/macos/install-glm-claude.command
-./scripts/macos/install-glm-claude.command
-```
+#### Windows
 
-#### 安装 OpenAI Codex CLI
+1. 下载 `.zip` 文件到本地
+2. 先解压
+3. 双击里面名字带 **双击执行** 的 `.bat`
+4. 如果系统弹出管理员授权，点击允许
+5. 根据窗口提示输入需要的信息
+6. 等它自动安装完成
 
-```bash
-chmod +x ./scripts/macos/install-openai-codex.command
-./scripts/macos/install-openai-codex.command
-```
+---
 
-### Windows
+## 下载后会发生什么
 
-#### 安装 GLM Coding Plan + Claude Code
+安装器会自动帮用户完成这些事：
 
-直接双击：
+- 检查电脑里有没有 `node`、`npm`、`npx`
+- 没有的话自动安装 **系统级 Node.js**
+- 自动安装对应 CLI
+- 自动写入本地配置文件
+- 安装前自动备份旧配置
 
-```text
-scripts\windows\install-glm-claude.bat
-```
+---
 
-#### 安装 OpenAI Codex CLI
+## 两类安装器分别会让用户输入什么
 
-直接双击：
+### GLM Coding Plan + Claude Code
 
-```text
-scripts\windows\install-openai-codex.bat
-```
+通常会引导用户输入：
 
-## 清理旧版 GLM 本地托管环境
+- 套餐区域（中国站 / Global）
+- API Key
 
-如果用户以前使用过旧版本地托管 Node 方案，可以在系统级安装成功后再运行清理脚本。
+然后自动完成：
 
-### macOS
+- Node.js 安装（如缺失）
+- Claude Code 安装
+- Coding Helper 安装
+- Claude 配置写入
 
-```bash
-chmod +x ./scripts/macos/cleanup-old-glm-managed-install.command
-./scripts/macos/cleanup-old-glm-managed-install.command
-```
+### OpenAI Codex CLI
 
-### Windows
+通常会引导用户输入：
 
-直接双击：
+- Base URL
+- OpenAI API Key
+- 默认模型
+- reasoning effort
 
-```text
-scripts\windows\cleanup-old-glm-managed-install.bat
-```
+然后自动完成：
+
+- Node.js 安装（如缺失）
+- Codex CLI 安装
+- `~/.codex/config.toml` 写入
+- `~/.codex/auth.json` 写入
+
+---
+
+## 常见问题
+
+### 为什么 release 页面里还有 Source code (zip / tar.gz)
+
+这是 GitHub 自动生成的源码包，不是给普通用户直接双击运行的安装器。
+
+如果你只是想安装，请优先下载这些名字的文件：
+
+- `Double-Click.command`
+- `Download-Then-Double-Click.zip`
+
+### Windows 为什么是 zip，不是直接一个文件
+
+因为 Windows 安装器通常需要：
+
+- 一个可双击启动的 `.bat`
+- 一个实际执行逻辑的 `.ps1`
+
+所以这里直接打成一个 zip，用户下载一个文件就够了。
+
+### 我是新手，应该下载哪个
+
+最简单的判断：
+
+- 想装 **GLM + Claude** → 选名字里有 `GLM-Claude`
+- 想装 **OpenAI Codex** → 选名字里有 `OpenAI-Codex`
+- 用 mac → 选 `.command`
+- 用 Windows → 选 `.zip`
+
+---
+
+## 给第一次使用的人一句话建议
+
+- 不要下载 `Source code`
+- 直接点上面的下载链接
+- 下载到本地后按系统双击执行
+- 跟着提示一步一步填就行
+
+---
+
+## 适合谁用
+
+- 不会自己配 Node.js 的新手
+- 不想手动敲很多命令的用户
+- 需要把安装流程交给别人执行的人
+- 想降低远程协助成本的人
+
+## 功能亮点
+
+- 新手友好的双击安装入口
+- 自动检测并安装 Node.js
+- 自动安装 GLM Claude / OpenAI Codex
+- 自动写入本地配置
+- 自动备份旧配置
+- 提供旧版 GLM 环境清理脚本
+- 同时支持 macOS 与 Windows
 
 ## 使用说明
 
-- GLM 安装脚本基于官方 Coding Tool Helper 流程和 Node.js 官方安装包。
-- Codex 安装脚本采用官方 npm 安装路径，并自动落本地配置文件。
-- Codex CLI 在 Windows 上目前更适合作为**实验性方案**使用，长期使用仍建议 WSL2。
-- Codex 的 `auth.json` 写法来自本地可用配置与官方文档中的 provider 配置规则组合验证。
+- GLM 安装器基于官方 Coding Tool Helper 流程与 Node.js 官方安装包。
+- Codex 安装器基于官方 npm 安装路径，并自动写入本地配置。
+- Codex CLI 在 Windows 上更适合作为实验性方案，长期使用仍建议 WSL2。
+- 如果你是给别人分发，可以直接把上面的下载链接发给对方。
 
 ## 安全说明
 
 - 不要把真实 API Key 提交到仓库。
-- 脚本写入新配置前会先备份旧文件。
+- 安装器会在写入前备份旧配置。
 - `~/.codex/auth.json`、`~/.chelper/config.yaml`、Claude 配置文件都应只保留在本地。
-- 如发现安全问题，请参考 [SECURITY.md](./SECURITY.md)。
+- 如发现安全问题，请查看 [SECURITY.md](./SECURITY.md)。
 
 ## 版本说明
 
-- [v0.1.0](./docs/releases/v0.1.0.md)
+- [v0.1.3](./docs/releases/v0.1.3.md)
 
 ## 参考资料
 

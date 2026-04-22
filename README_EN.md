@@ -66,10 +66,12 @@ docs/releases/
 
 ## Quick Start
 
-If you download from GitHub Releases, prefer the assets with these suffixes:
+If you download from GitHub Releases, prefer the assets whose names include:
 
-- `【双击执行】.command` for macOS
-- `【下载后双击执行】.zip` for Windows
+- `Double-Click.command` for macOS
+- `Download-Then-Double-Click.zip` for Windows
+
+GitHub applies filename compatibility rules to uploaded assets, so the Chinese `【双击执行】` wording is stored mainly in the asset label.
 
 The Windows zip bundle already includes both the clickable `.bat` launcher and the underlying `.ps1` file, so one download is enough.
 
@@ -79,8 +81,8 @@ Those are auto-generated source archives provided by GitHub, not manually upload
 
 If you only want the beginner-friendly installer, choose the assets whose names contain:
 
-- `【双击执行】`
-- `【下载后双击执行】`
+- `Double-Click`
+- `Download-Then-Double-Click`
 
 ### macOS
 

@@ -33,7 +33,7 @@ The scripts are built for users who do **not** already have a complete Node.js e
 
 ### GLM Coding Plan + Claude Code
 
-- Claude Code installer for GLM Coding Plan China / Global.
+- Claude Code installer for GLM Coding Plan China.
 - Detects missing Node.js and installs it automatically.
 - Writes user config for `coding-helper`, `~/.claude/settings.json`, and `~/.claude.json`.
 

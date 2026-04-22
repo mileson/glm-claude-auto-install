@@ -126,11 +126,11 @@
 
 通常会引导用户输入：
 
-- 套餐区域（中国站 / Global）
 - API Key
 
 然后自动完成：
 
+- 自动使用中国站配置
 - Node.js 安装（如缺失）
 - Claude Code 安装
 - Coding Helper 安装

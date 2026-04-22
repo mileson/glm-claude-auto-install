@@ -31,20 +31,9 @@ function Ensure-Admin {
 }
 
 function Pick-Plan {
-  Write-Host ''
-  Write-Host '请选择套餐：'
-  Write-Host '  1) 中国站（默认）'
-  Write-Host '  2) Global'
-  $choice = Read-Host '请输入 1 或 2，直接回车默认 1'
-  if ($choice -eq '2') {
-    $script:GlmPlan = 'glm_coding_plan_global'
-    $script:ApiValidateUrl = 'https://api.z.ai/api/coding/paas/v4/models'
-    $script:BaseUrl = 'https://api.z.ai/api/anthropic'
-  } else {
-    $script:GlmPlan = 'glm_coding_plan_china'
-    $script:ApiValidateUrl = 'https://open.bigmodel.cn/api/coding/paas/v4/models'
-    $script:BaseUrl = 'https://open.bigmodel.cn/api/anthropic'
-  }
+  $script:GlmPlan = 'glm_coding_plan_china'
+  $script:ApiValidateUrl = 'https://open.bigmodel.cn/api/coding/paas/v4/models'
+  $script:BaseUrl = 'https://open.bigmodel.cn/api/anthropic'
 }
 
 function Get-PlainText([Security.SecureString]$secure) {

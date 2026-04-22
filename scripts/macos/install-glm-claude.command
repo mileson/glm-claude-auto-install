@@ -47,37 +47,9 @@ need_command mktemp
 need_command sudo
 
 pick_plan() {
-  if [[ -n "${GLM_PLAN:-}" ]]; then
-    case "$GLM_PLAN" in
-      glm_coding_plan_global)
-        API_VALIDATE_URL="https://api.z.ai/api/coding/paas/v4/models"
-        BASE_URL="https://api.z.ai/api/anthropic"
-        return
-        ;;
-      glm_coding_plan_china)
-        API_VALIDATE_URL="https://open.bigmodel.cn/api/coding/paas/v4/models"
-        BASE_URL="https://open.bigmodel.cn/api/anthropic"
-        return
-        ;;
-    esac
-  fi
-  echo
-  echo "请选择套餐："
-  echo "  1) 中国站（默认）"
-  echo "  2) Global"
-  read -r -p "请输入 1 或 2，直接回车默认 1：" plan_choice
-  case "${plan_choice:-1}" in
-    2)
-      GLM_PLAN="glm_coding_plan_global"
-      API_VALIDATE_URL="https://api.z.ai/api/coding/paas/v4/models"
-      BASE_URL="https://api.z.ai/api/anthropic"
-      ;;
-    *)
-      GLM_PLAN="glm_coding_plan_china"
-      API_VALIDATE_URL="https://open.bigmodel.cn/api/coding/paas/v4/models"
-      BASE_URL="https://open.bigmodel.cn/api/anthropic"
-      ;;
-  esac
+  GLM_PLAN="${GLM_PLAN:-$DEFAULT_PLAN}"
+  API_VALIDATE_URL="https://open.bigmodel.cn/api/coding/paas/v4/models"
+  BASE_URL="https://open.bigmodel.cn/api/anthropic"
 }
 
 load_existing_api_key() {

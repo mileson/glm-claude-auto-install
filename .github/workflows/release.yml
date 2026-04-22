@@ -1,0 +1,31 @@
+name: Release assets
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: docs/releases/${{ github.ref_name }}.md
+          files: |
+            scripts/macos/install-glm-claude.command
+            scripts/macos/cleanup-old-glm-managed-install.command
+            scripts/macos/install-openai-codex.command
+            scripts/windows/install-glm-claude.bat
+            scripts/windows/install-glm-claude.ps1
+            scripts/windows/cleanup-old-glm-managed-install.bat
+            scripts/windows/cleanup-old-glm-managed-install.ps1
+            scripts/windows/install-openai-codex.bat
+            scripts/windows/install-openai-codex.ps1

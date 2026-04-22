@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an improvement for the installers
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What user pain point should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested change
+    validations:
+      required: true

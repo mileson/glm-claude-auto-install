@@ -15,7 +15,7 @@
 This repository packages beginner-friendly installers for two common onboarding tasks:
 
 - Install **GLM Coding Plan + Claude Code** with automatic Node.js detection and setup.
-- Install **OpenAI Codex CLI** with automatic Node.js detection and guided proxy/API-key configuration.
+- Install **OpenAI Codex CLI** with automatic Node.js detection and a preset local config, so the user only needs to enter an API key.
 
 The scripts are built for users who do **not** already have a complete Node.js environment.
 
@@ -40,7 +40,8 @@ The scripts are built for users who do **not** already have a complete Node.js e
 ### OpenAI Codex CLI
 
 - Installs `@openai/codex` with npm.
-- Guides the user to input a custom Base URL, API key, model, and reasoning effort.
+- Reuses the current local Codex-style defaults for Base URL, model, and core settings.
+- Only asks the user for an API key during setup.
 - Writes `~/.codex/config.toml` and `~/.codex/auth.json`.
 - Intended for users who run Codex through an OpenAI-compatible gateway.
 
@@ -61,7 +62,7 @@ scripts/
     install-openai-codex.ps1
 
 docs/releases/
-  v0.1.0.md
+  v0.1.6.md
 ```
 
 ## Quick Start
@@ -162,7 +163,7 @@ scripts\windows\cleanup-old-glm-managed-install.bat
 
 ## Release notes
 
-- [v0.1.4](./docs/releases/v0.1.4.md)
+- [v0.1.6](./docs/releases/v0.1.6.md)
 
 ## References
 

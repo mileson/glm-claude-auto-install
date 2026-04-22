@@ -6,8 +6,16 @@ export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 SCRIPT_NAME="OpenAI Codex CLI 一键安装（macOS）"
 NODE_DIST_BASE="https://nodejs.org/dist/latest-jod"
 CODEX_PKG="@openai/codex"
+CODEX_PROVIDER_NAME="OpenAI"
+CODEX_BASE_URL="https://ai.558669.xyz"
 DEFAULT_MODEL="gpt-5.4"
 DEFAULT_REASONING="xhigh"
+DEFAULT_NETWORK_ACCESS="enabled"
+DEFAULT_CONTEXT_WINDOW="1000000"
+DEFAULT_AUTO_COMPACT_TOKEN_LIMIT="900000"
+DEFAULT_APPROVAL_POLICY="never"
+DEFAULT_SANDBOX_MODE="danger-full-access"
+DEFAULT_APPROVALS_REVIEWER="user"
 
 log() { printf '🔹 %s\n' "$*"; }
 ok() { printf '✅ %s\n' "$*"; }
@@ -91,20 +99,40 @@ install_system_node() {
   ok "npm 已安装：$($NPM_BIN --version)"
 }
 
+load_existing_api_key() {
+  local auth_file="$HOME/.codex/auth.json"
+  if [[ -f "$auth_file" ]]; then
+    EXISTING_API_KEY="$(python3 - "$auth_file" <<'PY'
+import json, sys
+try:
+    obj = json.load(open(sys.argv[1]))
+    print(obj.get('OPENAI_API_KEY', ''))
+except Exception:
+    print('')
+PY
+)"
+  else
+    EXISTING_API_KEY=""
+  fi
+}
+
 prompt_codex_config() {
+  load_existing_api_key
   echo
-  read -r -p "请输入 Codex 代理 Base URL（例如 https://your-host/v1 ）：" CODEX_BASE_URL
-  [[ -n "$CODEX_BASE_URL" ]] || { err "Base URL 不能为空。"; pause_and_exit 1; }
-
-  read -r -s -p "请输入 OpenAI API Key：" CODEX_API_KEY
+  log "这个安装器会自动使用预设的 Codex 配置。"
+  log "只需要输入 OpenAI API Key。"
+  log "预设 Base URL：$CODEX_BASE_URL"
+  log "预设模型：$DEFAULT_MODEL"
   echo
+  if [[ -n "$EXISTING_API_KEY" ]]; then
+    read -r -s -p "请输入 OpenAI API Key（直接回车复用当前已保存的 Key）：" CODEX_API_KEY_INPUT
+    echo
+    CODEX_API_KEY="${CODEX_API_KEY_INPUT:-$EXISTING_API_KEY}"
+  else
+    read -r -s -p "请输入 OpenAI API Key：" CODEX_API_KEY
+    echo
+  fi
   [[ -n "$CODEX_API_KEY" ]] || { err "API Key 不能为空。"; pause_and_exit 1; }
-
-  read -r -p "请输入默认模型（默认 ${DEFAULT_MODEL}）：" CODEX_MODEL_INPUT
-  CODEX_MODEL="${CODEX_MODEL_INPUT:-$DEFAULT_MODEL}"
-
-  read -r -p "请输入 reasoning effort（默认 ${DEFAULT_REASONING}）：" CODEX_REASONING_INPUT
-  CODEX_REASONING="${CODEX_REASONING_INPUT:-$DEFAULT_REASONING}"
 }
 
 mask_key() {
@@ -139,15 +167,22 @@ write_codex_config() {
   backup_file "$codex_dir/auth.json"
 
   cat > "$codex_dir/config.toml" <<EOF
-model_provider = "openai_proxy"
-model = "${CODEX_MODEL}"
-review_model = "${CODEX_MODEL}"
-model_reasoning_effort = "${CODEX_REASONING}"
+model_provider = "${CODEX_PROVIDER_NAME}"
+model = "${DEFAULT_MODEL}"
+review_model = "${DEFAULT_MODEL}"
+model_reasoning_effort = "${DEFAULT_REASONING}"
+disable_response_storage = true
+network_access = "${DEFAULT_NETWORK_ACCESS}"
+model_context_window = ${DEFAULT_CONTEXT_WINDOW}
+model_auto_compact_token_limit = ${DEFAULT_AUTO_COMPACT_TOKEN_LIMIT}
+approval_policy = "${DEFAULT_APPROVAL_POLICY}"
+sandbox_mode = "${DEFAULT_SANDBOX_MODE}"
+approvals_reviewer = "${DEFAULT_APPROVALS_REVIEWER}"
 cli_auth_credentials_store = "file"
 forced_login_method = "api"
 
-[model_providers.openai_proxy]
-name = "OpenAI Compatible Proxy"
+[model_providers.${CODEX_PROVIDER_NAME}]
+name = "${CODEX_PROVIDER_NAME}"
 base_url = "${CODEX_BASE_URL}"
 wire_api = "responses"
 requires_openai_auth = true
@@ -170,7 +205,7 @@ verify_everything() {
   ok "npm：$($NPM_BIN --version)"
   ok "npx：$($NPX_BIN --version)"
   ok "Codex CLI：$(codex --version)"
-  ok "Model：$CODEX_MODEL"
+  ok "Model：$DEFAULT_MODEL"
   ok "Base URL：$CODEX_BASE_URL"
   ok "API Key：$(mask_key "$CODEX_API_KEY")"
   warn "提示：首次执行 codex 时，如服务端策略不同，可能仍会要求重新登录。"

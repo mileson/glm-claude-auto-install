@@ -37,7 +37,7 @@
 适合：
 
 - 你要安装 Codex 命令行工具
-- 你有单独提供给用户的 Base URL 和 API Key
+- 你只想让用户输入 API Key，其他配置都自动带好
 
 ---
 
@@ -136,15 +136,14 @@
 
 通常会引导用户输入：
 
-- Base URL
 - OpenAI API Key
-- 默认模型
-- reasoning effort
 
 然后自动完成：
 
 - Node.js 安装（如缺失）
 - Codex CLI 安装
+- 预设 Base URL 自动写入
+- 预设模型与默认配置自动写入
 - `~/.codex/config.toml` 写入
 - `~/.codex/auth.json` 写入
 
@@ -223,7 +222,7 @@
 
 ## 版本说明
 
-- [v0.1.4](./docs/releases/v0.1.4.md)
+- [v0.1.6](./docs/releases/v0.1.6.md)
 
 ## 参考资料
 

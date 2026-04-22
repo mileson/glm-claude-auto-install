@@ -49,14 +49,14 @@
 
 | 系统 | 下载 |
 |---|---|
-| macOS | [下载：GLM Claude 安装器（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-Double-Click.command) |
+| macOS | [下载：GLM Claude 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-App-Double-Click.zip) |
 | Windows | [下载：GLM Claude 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip) |
 
 ### 安装 OpenAI Codex CLI
 
 | 系统 | 下载 |
 |---|---|
-| macOS | [下载：OpenAI Codex 安装器（双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-Double-Click.command) |
+| macOS | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-App-Double-Click.zip) |
 | Windows | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip) |
 
 ---
@@ -65,9 +65,9 @@
 
 #### macOS
 
-1. 下载 `.command` 文件到桌面或下载目录
-2. 双击运行
-3. 如果系统提示安全确认，按提示允许
+1. 下载 `.zip` 文件到桌面或下载目录
+2. 双击解压
+3. 双击里面的 `.app`
 4. 根据窗口提示输入需要的信息
 5. 等它自动安装完成
 
@@ -87,13 +87,13 @@
 如果你只是想先把工具装好，直接按下面选就行：
 
 - **我用 mac，想装智谱 Claude Code**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-Double-Click.command)
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-App-Double-Click.zip)
 
 - **我用 Windows，想装智谱 Claude Code**  
   [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip)
 
 - **我用 mac，想装 OpenAI Codex**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-Double-Click.command)
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-App-Double-Click.zip)
 
 - **我用 Windows，想装 OpenAI Codex**  
   [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip)
@@ -226,7 +226,7 @@
 
 ## 版本说明
 
-- [v0.1.6](./docs/releases/v0.1.6.md)
+- [v0.1.7](./docs/releases/v0.1.7.md)
 
 ## 参考资料
 

@@ -91,7 +91,7 @@ Those are auto-generated source archives provided by GitHub, not manually upload
 
 If you only want the beginner-friendly installer, choose the assets whose names contain:
 
-- `Double-Click`
+- `App-Double-Click`
 - `Download-Then-Double-Click`
 
 ### macOS
@@ -163,7 +163,7 @@ scripts\windows\cleanup-old-glm-managed-install.bat
 
 ## Release notes
 
-- [v0.1.6](./docs/releases/v0.1.6.md)
+- [v0.1.7](./docs/releases/v0.1.7.md)
 
 ## References
 

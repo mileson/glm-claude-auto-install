@@ -82,18 +82,25 @@
 
 ---
 
-## 为什么 release 里现在应该只保留 4 个主文件
+## 我该下载哪个
 
-因为大多数用户真正需要的只有：
+如果你只是想先把工具装好，直接按下面选就行：
 
-1. mac 版智谱 Claude Code
-2. Windows 版智谱 Claude Code
-3. mac 版 OpenAI Codex
-4. Windows 版 OpenAI Codex
+- **我用 mac，想装智谱 Claude Code**  
+  下载 `GLM-Claude-macOS-Double-Click.command`
 
-清理旧版环境属于少数情况，不应该放在主下载区让新手分心。
+- **我用 Windows，想装智谱 Claude Code**  
+  下载 `GLM-Claude-Windows-Download-Then-Double-Click.zip`
 
-如果以后真的需要清理旧版 GLM 环境，可以直接到仓库里的 `scripts/` 目录获取对应脚本。
+- **我用 mac，想装 OpenAI Codex**  
+  下载 `OpenAI-Codex-macOS-Double-Click.command`
+
+- **我用 Windows，想装 OpenAI Codex**  
+  下载 `OpenAI-Codex-Windows-Download-Then-Double-Click.zip`
+
+如果你现在只是第一次安装，看到这 4 个文件就够了，其他文件你可以先不用管。
+
+如果你以前装过旧版 GLM 环境，后面确实需要清理旧版本，再去仓库里的 `scripts/` 目录找清理脚本就可以。
 
 ---
 

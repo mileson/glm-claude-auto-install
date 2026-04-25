@@ -62,7 +62,7 @@ scripts/
     install-openai-codex.ps1
 
 docs/releases/
-  v0.1.6.md
+  v0.1.9.md
 ```
 
 ## Quick Start
@@ -154,6 +154,27 @@ scripts\windows\cleanup-old-glm-managed-install.bat
 - Windows support for Codex CLI should be treated as **experimental**; WSL2 is still the safest path for daily use.
 - The Codex auth file format used here is based on a working local Codex setup plus the official Codex config model-provider rules.
 
+## Troubleshooting
+
+### ENOTFOUND or registry.npmjs.org during install
+
+This means the computer cannot reach the npm registry. It is usually caused by the current network, DNS, proxy, or VPN settings.
+
+Try switching to a stable network, or make sure your proxy/VPN is enabled, then run the installer again.
+
+If npm has an old proxy setting, run:
+
+```bash
+npm config delete proxy
+npm config delete https-proxy
+```
+
+If you have a working npm mirror, set it before running the installer:
+
+```bash
+npm config set registry <your npm mirror URL>
+```
+
 ## Security
 
 - Never commit real API keys.
@@ -163,7 +184,7 @@ scripts\windows\cleanup-old-glm-managed-install.bat
 
 ## Release notes
 
-- [v0.1.7](./docs/releases/v0.1.7.md)
+- [v0.1.9](./docs/releases/v0.1.9.md)
 
 ## References
 

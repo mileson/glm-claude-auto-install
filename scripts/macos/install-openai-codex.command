@@ -5,6 +5,7 @@ export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 SCRIPT_NAME="OpenAI Codex CLI 一键安装（macOS）"
 NODE_DIST_BASE="https://nodejs.org/dist/latest-jod"
+DEFAULT_NPM_REGISTRY="https://registry.npmjs.org/"
 CODEX_PKG="@openai/codex"
 CODEX_PROVIDER_NAME="OpenAI"
 CODEX_BASE_URL="https://ai.558669.xyz"
@@ -99,6 +100,40 @@ install_system_node() {
   ok "npm 已安装：$($NPM_BIN --version)"
 }
 
+show_npm_network_help() {
+  local registry="$1"
+  err "无法连接 npm 源：$registry"
+  warn "这通常是当前网络、DNS 或代理导致的，Codex CLI 还没有开始安装。"
+  echo
+  echo "可以按下面顺序处理后重新运行安装器："
+  echo "1. 打开浏览器访问 ${registry}，确认当前网络可以访问。"
+  echo "2. 如果正在使用公司网络、校园网、代理或 VPN，请切换网络，或确认代理已开启。"
+  echo "3. 如果 npm 配过代理但已经失效，请在终端执行："
+  echo "   npm config delete proxy"
+  echo "   npm config delete https-proxy"
+  echo "4. 如果你有可用的 npm 镜像源，可以先执行："
+  echo "   npm config set registry <你的 npm 镜像源地址>"
+}
+
+get_npm_registry() {
+  local registry
+  registry="$("$NPM_BIN" config get registry 2>/dev/null || true)"
+  if [[ -z "$registry" || "$registry" == "undefined" || "$registry" == "null" ]]; then
+    registry="$DEFAULT_NPM_REGISTRY"
+  fi
+  printf '%s' "$registry"
+}
+
+check_npm_registry_access() {
+  local registry="${1:-}"
+  [[ -n "$registry" ]] || registry="$(get_npm_registry)"
+  log "检查 npm 源连接：$registry"
+  if ! curl -fsSL --connect-timeout 8 --max-time 20 -o /dev/null "$registry"; then
+    show_npm_network_help "$registry"
+    pause_and_exit 1
+  fi
+}
+
 load_existing_api_key() {
   local auth_file="$HOME/.codex/auth.json"
   if [[ -f "$auth_file" ]]; then
@@ -147,7 +182,21 @@ mask_key() {
 
 install_codex_cli() {
   log "开始系统级安装 Codex CLI..."
-  sudo "$NPM_BIN" install -g "$CODEX_PKG"
+  local registry npm_log
+  registry="$(get_npm_registry)"
+  check_npm_registry_access "$registry"
+  npm_log="$(mktemp)"
+  if ! sudo "$NPM_BIN" install -g --registry "$registry" "$CODEX_PKG" 2>&1 | tee "$npm_log"; then
+    if grep -Eqi 'ENOTFOUND|getaddrinfo|registry\.npmjs\.org|network connectivity|proxy' "$npm_log"; then
+      show_npm_network_help "$(get_npm_registry)"
+    else
+      err "npm 全局安装 Codex CLI 失败。"
+      warn "上方是 npm 返回的错误信息，请根据提示处理后重新运行安装器。"
+    fi
+    rm -f "$npm_log"
+    pause_and_exit 1
+  fi
+  rm -f "$npm_log"
   hash -r
   ok "Codex CLI：$(codex --version)"
 }

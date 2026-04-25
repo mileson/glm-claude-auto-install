@@ -173,6 +173,23 @@
 
 所以这里直接打成一个 zip，用户下载一个文件就够了。
 
+### 安装时看到 ENOTFOUND 或 registry.npmjs.org
+
+这表示电脑当前连不上 npm 源，通常和网络、DNS、代理或 VPN 有关。可以先换一个稳定网络，或确认代理/VPN 已经开启，然后重新运行安装器。
+
+如果之前改过 npm 代理，也可以在终端执行：
+
+```bash
+npm config delete proxy
+npm config delete https-proxy
+```
+
+如果有可用的 npm 镜像源，可以先执行：
+
+```bash
+npm config set registry <你的 npm 镜像源地址>
+```
+
 ### 我是新手，应该下载哪个
 
 最简单的判断：
@@ -226,7 +243,7 @@
 
 ## 版本说明
 
-- [v0.1.7](./docs/releases/v0.1.7.md)
+- [v0.1.9](./docs/releases/v0.1.9.md)
 
 ## 参考资料
 

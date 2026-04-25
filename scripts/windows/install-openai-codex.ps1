@@ -14,14 +14,24 @@ $DefaultApprovalPolicy = 'never'
 $DefaultSandboxMode = 'danger-full-access'
 $DefaultApprovalsReviewer = 'user'
 $SystemNodePrefix = Join-Path ${env:ProgramFiles} 'nodejs'
+$LogRoot = Join-Path $env:TEMP 'glm-claude-auto-install-logs'
+$LogPath = Join-Path $LogRoot ('install-openai-codex-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
 
-function Write-Info($msg) { Write-Host "🔹 $msg" }
-function Write-Ok($msg) { Write-Host "✅ $msg" }
-function Write-WarnMsg($msg) { Write-Host "⚠️  $msg" }
-function Write-Err($msg) { Write-Host "❌ $msg" -ForegroundColor Red }
+New-Item -ItemType Directory -Force -Path $LogRoot | Out-Null
+
+function Write-LogLine([string]$level, [string]$msg) {
+  $line = '{0} [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $level, $msg
+  Add-Content -Path $LogPath -Encoding UTF8 -Value $line
+}
+
+function Write-Info($msg) { Write-Host "🔹 $msg"; Write-LogLine 'INFO' $msg }
+function Write-Ok($msg) { Write-Host "✅ $msg"; Write-LogLine 'OK' $msg }
+function Write-WarnMsg($msg) { Write-Host "⚠️  $msg"; Write-LogLine 'WARN' $msg }
+function Write-Err($msg) { Write-Host "❌ $msg" -ForegroundColor Red; Write-LogLine 'ERROR' $msg }
 
 function Pause-AndExit([int]$code = 0) {
   Write-Host ''
+  Write-Host ('日志文件：' + $LogPath)
   Read-Host '按回车键关闭窗口' | Out-Null
   exit $code
 }
@@ -96,9 +106,9 @@ function Prompt-CodexConfig {
   $authPath = Join-Path $HOME '.codex\auth.json'
   if (Test-Path $authPath) {
     try {
-      $auth = Get-Content $authPath -Raw | ConvertFrom-Json -AsHashtable
-      if ($auth.ContainsKey('OPENAI_API_KEY')) {
-        $existingKey = [string]$auth['OPENAI_API_KEY']
+      $auth = Get-Content $authPath -Raw | ConvertFrom-Json
+      if ($auth.PSObject.Properties.Name -contains 'OPENAI_API_KEY') {
+        $existingKey = [string]$auth.OPENAI_API_KEY
       }
     } catch {
     }
@@ -200,6 +210,7 @@ try {
   Write-Host '========================================'
   Write-Host '  OpenAI Codex CLI 一键安装（Windows）'
   Write-Host '========================================'
+  Write-Info ('日志文件：' + $LogPath)
   Write-WarnMsg '官方当前主推 macOS / Linux，Windows 建议优先在 WSL2 中使用。'
   Write-Info '官方安装文档：https://developers.openai.com/codex/cli'
   Ensure-Admin
@@ -213,5 +224,6 @@ try {
   Pause-AndExit 0
 } catch {
   Write-Err $_.Exception.Message
+  Write-LogLine 'ERROR' ($_.ScriptStackTrace | Out-String)
   Pause-AndExit 1
 }

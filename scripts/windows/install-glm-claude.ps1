@@ -7,16 +7,41 @@ $ClaudePkg = '@anthropic-ai/claude-code'
 $DefaultLang = 'zh_CN'
 $OldManagedRoot = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'GLM-Coding-Installer' } else { $null }
 $SystemNodePrefix = Join-Path ${env:ProgramFiles} 'nodejs'
+$LogRoot = Join-Path $env:TEMP 'glm-claude-auto-install-logs'
+$LogPath = Join-Path $LogRoot ('install-glm-claude-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
 
-function Write-Info($msg) { Write-Host "🔹 $msg" }
-function Write-Ok($msg) { Write-Host "✅ $msg" }
-function Write-WarnMsg($msg) { Write-Host "⚠️  $msg" }
-function Write-Err($msg) { Write-Host "❌ $msg" -ForegroundColor Red }
+New-Item -ItemType Directory -Force -Path $LogRoot | Out-Null
+
+function Write-LogLine([string]$level, [string]$msg) {
+  $line = '{0} [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $level, $msg
+  Add-Content -Path $LogPath -Encoding UTF8 -Value $line
+}
+
+function Write-Info($msg) { Write-Host "🔹 $msg"; Write-LogLine 'INFO' $msg }
+function Write-Ok($msg) { Write-Host "✅ $msg"; Write-LogLine 'OK' $msg }
+function Write-WarnMsg($msg) { Write-Host "⚠️  $msg"; Write-LogLine 'WARN' $msg }
+function Write-Err($msg) { Write-Host "❌ $msg" -ForegroundColor Red; Write-LogLine 'ERROR' $msg }
 
 function Pause-AndExit([int]$code = 0) {
   Write-Host ''
+  Write-Host ('日志文件：' + $LogPath)
   Read-Host '按回车键关闭窗口' | Out-Null
   exit $code
+}
+
+function ConvertTo-PlainHashtable($value) {
+  if ($null -eq $value) { return @{} }
+  if ($value -is [hashtable]) { return $value }
+  $table = @{}
+  foreach ($property in $value.PSObject.Properties) {
+    $propertyValue = $property.Value
+    if ($propertyValue -is [pscustomobject]) {
+      $table[$property.Name] = ConvertTo-PlainHashtable $propertyValue
+    } else {
+      $table[$property.Name] = $propertyValue
+    }
+  }
+  return $table
 }
 
 function Ensure-Admin {
@@ -201,7 +226,7 @@ api_key: $script:GlmApiKey
 
   $settings = @{}
   if (Test-Path $settingsPath) {
-    $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json -AsHashtable
+    $settings = ConvertTo-PlainHashtable (Get-Content $settingsPath -Raw | ConvertFrom-Json)
   }
   if (-not $settings.ContainsKey('env')) { $settings['env'] = @{} }
   $settings['env'].Remove('ANTHROPIC_API_KEY') | Out-Null
@@ -213,7 +238,7 @@ api_key: $script:GlmApiKey
 
   $claudeJson = @{}
   if (Test-Path $claudeJsonPath) {
-    $claudeJson = Get-Content $claudeJsonPath -Raw | ConvertFrom-Json -AsHashtable
+    $claudeJson = ConvertTo-PlainHashtable (Get-Content $claudeJsonPath -Raw | ConvertFrom-Json)
   }
   $claudeJson['hasCompletedOnboarding'] = $true
   $claudeJson | ConvertTo-Json -Depth 10 | Set-Content -Path $claudeJsonPath -Encoding UTF8
@@ -239,6 +264,7 @@ try {
   Write-Host '========================================'
   Write-Host '  GLM Claude Code 一键安装（Windows）'
   Write-Host '========================================'
+  Write-Info ('日志文件：' + $LogPath)
   Ensure-Admin
   Pick-Plan
   Prompt-ApiKey
@@ -254,5 +280,6 @@ try {
   Pause-AndExit 0
 } catch {
   Write-Err $_.Exception.Message
+  Write-LogLine 'ERROR' ($_.ScriptStackTrace | Out-String)
   Pause-AndExit 1
 }

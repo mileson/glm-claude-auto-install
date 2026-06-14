@@ -231,7 +231,7 @@ npm config set registry <你的 npm 镜像源地址>
 
 - GLM 安装器基于官方 Coding Tool Helper 流程与 Node.js 官方安装包。
 - Codex 安装器基于官方 npm 安装路径，并自动写入本地配置。
-- Codex CLI 在 Windows 上更适合作为实验性方案，长期使用仍建议 WSL2。
+- Codex CLI 可在 Windows 原生 PowerShell / Windows Terminal 中使用；Windows 11 最稳，较新的 Windows 10 需要 1809 或更新版本。需要 Linux 工具链时再选择 WSL2。
 - 如果你是给别人分发，可以直接把上面的下载链接发给对方。
 
 ## 安全说明

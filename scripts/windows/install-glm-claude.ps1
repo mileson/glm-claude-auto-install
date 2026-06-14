@@ -1,20 +1,46 @@
+﻿param(
+  [string]$TargetHome = ''
+)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $NodeDistBase = 'https://nodejs.org/dist/latest-jod'
 $HelperPkg = '@z_ai/coding-helper'
 $ClaudePkg = '@anthropic-ai/claude-code'
+$ClaudeInstallerUrl = 'https://downloads.claude.ai/claude-code-releases/bootstrap.ps1'
 $DefaultLang = 'zh_CN'
-$OldManagedRoot = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'GLM-Coding-Installer' } else { $null }
+$OldManagedRoot = $null
 $SystemNodePrefix = Join-Path ${env:ProgramFiles} 'nodejs'
 $LogRoot = Join-Path $env:TEMP 'glm-claude-auto-install-logs'
 $LogPath = Join-Path $LogRoot ('install-glm-claude-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
+$script:ClaudeCmd = ''
+$script:ClaudeVersion = ''
+$script:TargetHome = if ([string]::IsNullOrWhiteSpace($TargetHome)) {
+  if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE)) { $env:USERPROFILE } else { $HOME }
+} else {
+  [System.IO.Path]::GetFullPath($TargetHome)
+}
+$script:UserNodePrefix = Join-Path $script:TargetHome 'npm-global'
+$OldManagedRoot = Join-Path $script:TargetHome 'AppData\Local\GLM-Coding-Installer'
 
 New-Item -ItemType Directory -Force -Path $LogRoot | Out-Null
 
 function Write-LogLine([string]$level, [string]$msg) {
   $line = '{0} [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $level, $msg
-  Add-Content -Path $LogPath -Encoding UTF8 -Value $line
+  $logParent = Split-Path -Parent $LogPath
+  if (-not [string]::IsNullOrWhiteSpace($logParent)) {
+    try { New-Item -ItemType Directory -Force -Path $logParent | Out-Null } catch {}
+  }
+  for ($attempt = 1; $attempt -le 5; $attempt++) {
+    try {
+      Add-Content -Path $LogPath -Encoding UTF8 -Value $line -ErrorAction Stop
+      break
+    } catch {
+      if ($attempt -eq 5) { break }
+      Start-Sleep -Milliseconds (80 * $attempt)
+    }
+  }
 }
 
 function Write-Info($msg) { Write-Host "🔹 $msg"; Write-LogLine 'INFO' $msg }
@@ -44,12 +70,312 @@ function ConvertTo-PlainHashtable($value) {
   return $table
 }
 
+function Test-SamePath([string]$a, [string]$b) {
+  return ($a.TrimEnd('\').ToLowerInvariant() -eq $b.TrimEnd('\').ToLowerInvariant())
+}
+
+function Get-TargetUserSid {
+  try {
+    $target = $script:TargetHome.TrimEnd('\').ToLowerInvariant()
+    $profile = Get-CimInstance Win32_UserProfile -ErrorAction Stop |
+      Where-Object { $_.LocalPath -and $_.LocalPath.TrimEnd('\').ToLowerInvariant() -eq $target } |
+      Select-Object -First 1
+    if ($profile -and $profile.SID) { return [string]$profile.SID }
+  } catch {
+    Write-LogLine 'WARN' ('failed to resolve target user SID: ' + $_.Exception.Message)
+  }
+  return ''
+}
+
+function Get-TargetUserPath {
+  $sid = Get-TargetUserSid
+  if (-not [string]::IsNullOrWhiteSpace($sid)) {
+    try {
+      $envKey = "Registry::HKEY_USERS\$sid\Environment"
+      if (Test-Path $envKey) {
+        $value = (Get-ItemProperty -Path $envKey -Name Path -ErrorAction SilentlyContinue).Path
+        if ($value) { return [string]$value }
+      }
+    } catch {
+      Write-LogLine 'WARN' ('failed to read target user PATH: ' + $_.Exception.Message)
+    }
+  }
+  if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE) -and
+      $script:TargetHome.TrimEnd('\').ToLowerInvariant() -eq $env:USERPROFILE.TrimEnd('\').ToLowerInvariant()) {
+    return [Environment]::GetEnvironmentVariable('Path', 'User')
+  }
+  return ''
+}
+
+function Set-TargetUserPath([string]$value) {
+  $sid = Get-TargetUserSid
+  if (-not [string]::IsNullOrWhiteSpace($sid)) {
+    try {
+      $envKey = "Registry::HKEY_USERS\$sid\Environment"
+      New-Item -Path $envKey -Force | Out-Null
+      New-ItemProperty -Path $envKey -Name Path -Value $value -PropertyType ExpandString -Force | Out-Null
+      return
+    } catch {
+      Write-LogLine 'WARN' ('failed to write target user PATH: ' + $_.Exception.Message)
+    }
+  }
+  if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE) -and
+      $script:TargetHome.TrimEnd('\').ToLowerInvariant() -eq $env:USERPROFILE.TrimEnd('\').ToLowerInvariant()) {
+    [Environment]::SetEnvironmentVariable('Path', $value, 'User')
+    return
+  }
+  Write-WarnMsg '无法持久写入目标用户 PATH，本次安装窗口会临时补齐 PATH。'
+}
+
+function Add-TargetUserPathEntry([string]$path) {
+  $userPath = Get-TargetUserPath
+  $parts = @()
+  if (-not [string]::IsNullOrWhiteSpace($userPath)) {
+    $parts = $userPath -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+  }
+  foreach ($part in $parts) {
+    if (Test-SamePath $part $path) { return }
+  }
+  $next = if ([string]::IsNullOrWhiteSpace($userPath)) { $path } else { $userPath.TrimEnd(';') + ';' + $path }
+  Set-TargetUserPath $next
+  Write-Ok "已加入用户 PATH：$path"
+}
+
+function Refresh-ProcessPath {
+  $machine = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+  $user = Get-TargetUserPath
+  $env:Path = (@($script:UserNodePrefix, $SystemNodePrefix, $machine, $user) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ';'
+}
+
+function Clear-TargetNpmCache {
+  $cachePath = Join-Path $script:TargetHome 'AppData\Local\npm-cache'
+  if (-not ($cachePath.TrimEnd('\').ToLowerInvariant().StartsWith($script:TargetHome.TrimEnd('\').ToLowerInvariant()))) {
+    Write-WarnMsg ('跳过 npm cache 清理，路径不在目标用户目录内：' + $cachePath)
+    return
+  }
+
+  try {
+    if (Test-Path $cachePath) {
+      Write-WarnMsg ('清理目标用户 npm cache：' + $cachePath)
+      Remove-Item -LiteralPath $cachePath -Recurse -Force -ErrorAction Stop
+    }
+    New-Item -ItemType Directory -Force -Path $cachePath | Out-Null
+  } catch {
+    Write-WarnMsg ('无法清理 npm cache：' + $_.Exception.Message)
+  }
+}
+
+function Write-TargetNpmPrefix {
+  $npmrcPath = Join-Path $script:TargetHome '.npmrc'
+  $lines = @()
+  if (Test-Path $npmrcPath) {
+    $lines = Get-Content -Path $npmrcPath -ErrorAction SilentlyContinue |
+      Where-Object { $_ -notmatch '^\s*prefix\s*=' }
+  }
+  $lines += ('prefix=' + $script:UserNodePrefix)
+  $encoding = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($npmrcPath, (($lines -join [Environment]::NewLine) + [Environment]::NewLine), $encoding)
+}
+
+function Write-Utf8NoBom([string]$path, [string]$content) {
+  $encoding = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($path, $content, $encoding)
+}
+
+function Remove-StaleNpmClaudeCode {
+  $paths = @(
+    (Join-Path $script:UserNodePrefix 'claude'),
+    (Join-Path $script:UserNodePrefix 'claude.cmd'),
+    (Join-Path $script:UserNodePrefix 'claude.ps1'),
+    (Join-Path $script:UserNodePrefix 'node_modules\@anthropic-ai\claude-code')
+  )
+
+  $anthropicRoot = Join-Path $script:UserNodePrefix 'node_modules\@anthropic-ai'
+  if (Test-Path $anthropicRoot) {
+    $paths += Get-ChildItem -LiteralPath $anthropicRoot -Force -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -like '.claude-code-*' } |
+      ForEach-Object { $_.FullName }
+  }
+
+  foreach ($path in $paths) {
+    if (Test-Path $path) {
+      try {
+        Write-WarnMsg ('移除旧的 npm Claude Code 文件：' + $path)
+        Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop
+      } catch {
+        Write-WarnMsg ('无法移除旧的 npm Claude Code 文件：' + $_.Exception.Message)
+      }
+    }
+  }
+}
+
+function Test-ClaudeCommand([string]$path) {
+  if ([string]::IsNullOrWhiteSpace($path) -or -not (Test-Path $path)) { return $false }
+  try {
+    $output = & $path --version 2>&1
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($output | Out-String))) {
+      $script:ClaudeCmd = $path
+      $script:ClaudeVersion = (($output | Out-String).Trim() -split "`r?`n" | Select-Object -First 1)
+      return $true
+    }
+  } catch {
+    Write-LogLine 'WARN' ('claude command failed: ' + $path + ' :: ' + $_.Exception.Message)
+  }
+  return $false
+}
+
+function Find-ClaudeCommand {
+  $candidates = New-Object System.Collections.Generic.List[string]
+  $knownPaths = @(
+    (Join-Path $script:UserNodePrefix 'claude.cmd'),
+    (Join-Path $script:UserNodePrefix 'claude.exe'),
+    (Join-Path $script:TargetHome '.local\bin\claude.exe'),
+    (Join-Path $script:TargetHome '.local\bin\claude.cmd'),
+    (Join-Path $script:TargetHome 'AppData\Local\Programs\Claude\claude.exe'),
+    (Join-Path $script:TargetHome 'AppData\Local\Programs\Claude Code\claude.exe'),
+    (Join-Path $script:TargetHome 'AppData\Local\Claude\claude.exe')
+  )
+  foreach ($path in $knownPaths) { $candidates.Add($path) }
+
+  try {
+    $found = Get-ChildItem -Path $script:TargetHome -Filter 'claude.exe' -File -Recurse -ErrorAction SilentlyContinue |
+      Where-Object { $_.FullName -notlike ((Join-Path $script:UserNodePrefix 'node_modules\@anthropic-ai') + '*') } |
+      Select-Object -ExpandProperty FullName
+    foreach ($path in $found) { $candidates.Add($path) }
+  } catch {
+    Write-LogLine 'WARN' ('failed to search claude.exe: ' + $_.Exception.Message)
+  }
+
+  try {
+    $command = Get-Command claude -ErrorAction SilentlyContinue
+    if ($command -and $command.Source) { $candidates.Add($command.Source) }
+  } catch {}
+
+  foreach ($path in ($candidates | Select-Object -Unique)) {
+    if (Test-ClaudeCommand $path) { return $script:ClaudeCmd }
+  }
+  return ''
+}
+
+function Install-ClaudeCodeFromNpm {
+  Write-WarnMsg '回退到 npm 安装 Claude Code，并禁用 PowerShell 问题 shim。'
+  $script:ClaudeNpmInstallExitCode = 0
+  Invoke-WithTargetUserEnvironment {
+    & $script:NodeCmds.Npm install -g --no-audit --no-fund --prefix $script:UserNodePrefix $ClaudePkg
+    $script:ClaudeNpmInstallExitCode = $LASTEXITCODE
+  }
+  if ($script:ClaudeNpmInstallExitCode -ne 0) {
+    throw 'npm 安装 Claude Code 失败。'
+  }
+
+  $psShim = Join-Path $script:UserNodePrefix 'claude.ps1'
+  if (Test-Path $psShim) {
+    try {
+      Remove-Item -LiteralPath $psShim -Force -ErrorAction Stop
+      Write-WarnMsg ('已移除 PowerShell Claude shim，避免命中不可执行的 claude.exe：' + $psShim)
+    } catch {
+      Write-WarnMsg ('无法移除 PowerShell Claude shim：' + $_.Exception.Message)
+    }
+  }
+}
+
+function Install-ClaudeCode {
+  Remove-StaleNpmClaudeCode
+  Refresh-ProcessPath
+  $existing = Find-ClaudeCommand
+  if ($existing) {
+    Add-TargetUserPathEntry (Split-Path -Parent $existing)
+    Refresh-ProcessPath
+    Write-Ok ('Claude Code：' + $script:ClaudeVersion)
+    return
+  }
+
+  Write-Info '开始使用官方 Windows 安装器安装 Claude Code...'
+  $installerOk = $false
+  try {
+    Invoke-WithTargetUserEnvironment {
+      $installerPath = Join-Path $env:TEMP ('claude-code-install-' + [guid]::NewGuid().ToString() + '.ps1')
+      Invoke-WebRequest -UseBasicParsing -Uri $ClaudeInstallerUrl -OutFile $installerPath
+      $installerText = Get-Content -LiteralPath $installerPath -Raw
+      if ($installerText -match '<html|<!doctype|<script' -or $installerText -notmatch 'DOWNLOAD_BASE_URL') {
+        throw 'Claude Code 官方安装器下载内容不是 PowerShell 脚本。'
+      }
+      & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installerPath
+      if ($LASTEXITCODE -ne 0) {
+        throw "Claude Code 官方安装器失败，退出码：$LASTEXITCODE"
+      }
+      Remove-Item -LiteralPath $installerPath -Force -ErrorAction SilentlyContinue
+    }
+    $installerOk = $true
+  } catch {
+    Write-WarnMsg ('官方安装器执行失败，尝试使用 winget：' + $_.Exception.Message)
+  }
+
+  if (-not $installerOk) {
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if ($winget) {
+      & $winget.Source install --id Anthropic.ClaudeCode --exact --silent --scope user --accept-package-agreements --accept-source-agreements
+      if ($LASTEXITCODE -ne 0) {
+        Write-WarnMsg ("winget 安装 Claude Code 失败，退出码：$LASTEXITCODE")
+      } else {
+        $installerOk = $true
+      }
+    } else {
+      Write-WarnMsg '未找到 winget。'
+    }
+  }
+  if (-not $installerOk) {
+    Install-ClaudeCodeFromNpm
+  }
+  Refresh-ProcessPath
+  $installed = Find-ClaudeCommand
+  if (-not $installed) {
+    throw 'Claude Code 官方安装器已执行，但未找到可用的 claude 命令。'
+  }
+  Add-TargetUserPathEntry (Split-Path -Parent $installed)
+  Refresh-ProcessPath
+  Write-Ok ('Claude Code：' + $script:ClaudeVersion)
+}
+
+function Invoke-WithTargetUserEnvironment([scriptblock]$body) {
+  $old = @{
+    USERPROFILE = $env:USERPROFILE
+    HOME = $env:HOME
+    APPDATA = $env:APPDATA
+    LOCALAPPDATA = $env:LOCALAPPDATA
+    npm_config_prefix = $env:npm_config_prefix
+    npm_config_cache = $env:npm_config_cache
+    npm_config_userconfig = $env:npm_config_userconfig
+  }
+  try {
+    $env:USERPROFILE = $script:TargetHome
+    $env:HOME = $script:TargetHome
+    $env:APPDATA = Join-Path $script:TargetHome 'AppData\Roaming'
+    $env:LOCALAPPDATA = Join-Path $script:TargetHome 'AppData\Local'
+    $env:npm_config_prefix = $script:UserNodePrefix
+    $env:npm_config_cache = Join-Path $script:TargetHome 'AppData\Local\npm-cache'
+    $env:npm_config_userconfig = Join-Path $script:TargetHome '.npmrc'
+    New-Item -ItemType Directory -Force -Path $env:APPDATA, $env:LOCALAPPDATA, $env:npm_config_cache | Out-Null
+    & $body
+  } finally {
+    foreach ($key in $old.Keys) {
+      if ($null -eq $old[$key]) {
+        Remove-Item "Env:$key" -ErrorAction SilentlyContinue
+      } else {
+        Set-Item "Env:$key" $old[$key]
+      }
+    }
+  }
+}
+
 function Ensure-Admin {
   $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
   if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Info '需要管理员权限，正在请求授权...'
     $args = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', '"' + $PSCommandPath + '"')
+    $args += '-TargetHome'
+    $args += ('"{0}"' -f $script:TargetHome)
     Start-Process powershell.exe -Verb RunAs -ArgumentList ($args -join ' ')
     exit 0
   }
@@ -68,7 +394,7 @@ function Get-PlainText([Security.SecureString]$secure) {
 }
 
 function Load-ExistingApiKey {
-  $configPath = Join-Path $HOME '.chelper\config.yaml'
+  $configPath = Join-Path $script:TargetHome '.chelper\config.yaml'
   if (Test-Path $configPath) {
     $line = Select-String -Path $configPath -Pattern '^api_key:\s*(.+)$' | Select-Object -Last 1
     if ($line) { return $line.Matches[0].Groups[1].Value.Trim('"') }
@@ -154,7 +480,7 @@ function Install-SystemNode {
   $proc = Start-Process msiexec.exe -ArgumentList @('/i', '"' + $msiPath + '"', '/qn', '/norestart') -Wait -PassThru
   if ($proc.ExitCode -ne 0) { throw "msiexec 安装失败，退出码：$($proc.ExitCode)" }
   Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
-  $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+  Refresh-ProcessPath
   $script:NodeCmds = Get-NodeCommands
   if (-not $script:NodeCmds) {
     $defaultDir = 'C:\Program Files\nodejs'
@@ -169,22 +495,32 @@ function Install-SystemNode {
 }
 
 function Install-GlobalTools {
-  Write-Info '开始系统级安装 Coding Helper 和 Claude Code...'
-  & $script:NodeCmds.Npm install -g --prefix $SystemNodePrefix $HelperPkg $ClaudePkg
-  if ($LASTEXITCODE -ne 0) { throw 'npm 全局安装失败。' }
-  $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+  Write-Info '开始安装 Coding Helper 到目标用户目录...'
+  Write-Info ('目标用户目录：' + $script:TargetHome)
+  New-Item -ItemType Directory -Force -Path $script:UserNodePrefix | Out-Null
+  Write-TargetNpmPrefix
+  Add-TargetUserPathEntry $script:UserNodePrefix
+  Refresh-ProcessPath
+  Clear-TargetNpmCache
+  $script:NpmInstallExitCode = 0
+  Invoke-WithTargetUserEnvironment {
+    & $script:NodeCmds.Npm install -g --no-audit --no-fund --prefix $script:UserNodePrefix $HelperPkg
+    $script:NpmInstallExitCode = $LASTEXITCODE
+  }
+  if ($script:NpmInstallExitCode -ne 0) { throw 'npm 全局安装失败。' }
+  Refresh-ProcessPath
   Write-Ok ('Coding Helper：' + (& coding-helper --version))
-  Write-Ok ('Claude Code：' + (& claude --version))
+  Install-ClaudeCode
 }
 
 function Remove-OldManagedPathEntries {
   if (-not $OldManagedRoot) { return }
-  $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+  $userPath = Get-TargetUserPath
   if ([string]::IsNullOrWhiteSpace($userPath)) { return }
   $parts = $userPath -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
   $filtered = $parts | Where-Object { $_.ToLower() -notlike ($OldManagedRoot.ToLower() + '*') }
   $newPath = ($filtered -join ';')
-  [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
+  Set-TargetUserPath $newPath
 }
 
 function Cleanup-OldManagedInstall {
@@ -194,7 +530,7 @@ function Cleanup-OldManagedInstall {
   if (Test-Path $OldManagedRoot) {
     Remove-Item $OldManagedRoot -Recurse -Force
   }
-  $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+  Refresh-ProcessPath
   Write-Ok '已清理旧的本地托管目录与用户 PATH 注入'
 }
 
@@ -205,14 +541,14 @@ function Backup-File([string]$path) {
 }
 
 function Write-UserConfigs {
-  $chelperDir = Join-Path $HOME '.chelper'
-  $claudeDir = Join-Path $HOME '.claude'
+  $chelperDir = Join-Path $script:TargetHome '.chelper'
+  $claudeDir = Join-Path $script:TargetHome '.claude'
   New-Item -ItemType Directory -Force -Path $chelperDir | Out-Null
   New-Item -ItemType Directory -Force -Path $claudeDir | Out-Null
 
   $chelperPath = Join-Path $chelperDir 'config.yaml'
   $settingsPath = Join-Path $claudeDir 'settings.json'
-  $claudeJsonPath = Join-Path $HOME '.claude.json'
+  $claudeJsonPath = Join-Path $script:TargetHome '.claude.json'
 
   Backup-File $chelperPath
   Backup-File $settingsPath
@@ -222,7 +558,7 @@ function Write-UserConfigs {
 lang: $DefaultLang
 plan: $script:GlmPlan
 api_key: $script:GlmApiKey
-"@ | Set-Content -Path $chelperPath -Encoding UTF8
+"@ | ForEach-Object { Write-Utf8NoBom $chelperPath ($_ + [Environment]::NewLine) }
 
   $settings = @{}
   if (Test-Path $settingsPath) {
@@ -234,14 +570,14 @@ api_key: $script:GlmApiKey
   $settings['env']['ANTHROPIC_BASE_URL'] = $script:BaseUrl
   $settings['env']['API_TIMEOUT_MS'] = '3000000'
   $settings['env']['CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'] = 1
-  $settings | ConvertTo-Json -Depth 10 | Set-Content -Path $settingsPath -Encoding UTF8
+  Write-Utf8NoBom $settingsPath (($settings | ConvertTo-Json -Depth 10) + [Environment]::NewLine)
 
   $claudeJson = @{}
   if (Test-Path $claudeJsonPath) {
     $claudeJson = ConvertTo-PlainHashtable (Get-Content $claudeJsonPath -Raw | ConvertFrom-Json)
   }
   $claudeJson['hasCompletedOnboarding'] = $true
-  $claudeJson | ConvertTo-Json -Depth 10 | Set-Content -Path $claudeJsonPath -Encoding UTF8
+  Write-Utf8NoBom $claudeJsonPath (($claudeJson | ConvertTo-Json -Depth 10) + [Environment]::NewLine)
 
   Write-Ok '已写入用户配置'
 }
@@ -254,7 +590,10 @@ function Verify-Everything {
   Write-Ok ('npm：' + (& $script:NodeCmds.Npm --version))
   Write-Ok ('npx：' + (& $script:NodeCmds.Npx --version))
   Write-Ok ('Coding Helper：' + (& coding-helper --version))
-  Write-Ok ('Claude Code：' + (& claude --version))
+  if (-not $script:ClaudeCmd) {
+    $null = Find-ClaudeCommand
+  }
+  Write-Ok ('Claude Code：' + (& $script:ClaudeCmd --version))
   Write-Ok ('套餐：' + $script:GlmPlan)
   Write-Ok ('API Key：' + (Mask-Key $script:GlmApiKey))
 }

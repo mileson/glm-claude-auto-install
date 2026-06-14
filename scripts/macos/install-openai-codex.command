@@ -9,24 +9,57 @@ DEFAULT_NPM_REGISTRY="https://registry.npmjs.org/"
 CODEX_PKG="@openai/codex"
 CODEX_PROVIDER_NAME="OpenAI"
 CODEX_BASE_URL="https://ai.558669.xyz"
-DEFAULT_MODEL="gpt-5.4"
+DEFAULT_MODEL="gpt-5.5"
 DEFAULT_REASONING="xhigh"
-DEFAULT_NETWORK_ACCESS="enabled"
 DEFAULT_CONTEXT_WINDOW="1000000"
 DEFAULT_AUTO_COMPACT_TOKEN_LIMIT="900000"
 DEFAULT_APPROVAL_POLICY="never"
 DEFAULT_SANDBOX_MODE="danger-full-access"
 DEFAULT_APPROVALS_REVIEWER="user"
+LOG_DIR="${TMPDIR:-/tmp}/glm-claude-auto-install-logs"
+LOG_PATH="$LOG_DIR/install-openai-codex-$(date +%Y%m%d-%H%M%S).log"
+GUI_MODE=0
+CODEX_API_KEY=""
+CODEX_API_KEY_FILE=""
+REUSE_SAVED_KEY=0
 
-log() { printf '🔹 %s\n' "$*"; }
-ok() { printf '✅ %s\n' "$*"; }
-err() { printf '❌ %s\n' "$*" >&2; }
-warn() { printf '⚠️  %s\n' "$*"; }
+mkdir -p "$LOG_DIR"
+
+for arg in "$@"; do
+  case "$arg" in
+    --gui) GUI_MODE=1 ;;
+    --console) GUI_MODE=0 ;;
+    --reuse-saved-key) REUSE_SAVED_KEY=1 ;;
+    --api-key=*) CODEX_API_KEY="${arg#--api-key=}" ;;
+    --api-key-file=*) CODEX_API_KEY_FILE="${arg#--api-key-file=}" ;;
+  esac
+done
+
+emit_gui_event() {
+  if [[ "$GUI_MODE" == "1" && -n "${GUI_EVENT_FILE:-}" ]]; then
+    printf '%s\t%s\n' "$1" "$2" >> "$GUI_EVENT_FILE"
+  fi
+}
+
+log_line() {
+  local level="$1"
+  local msg="$2"
+  printf '%s [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$msg" >> "$LOG_PATH"
+  emit_gui_event "$level" "$msg"
+}
+
+log() { printf '🔹 %s\n' "$*"; log_line INFO "$*"; }
+ok() { printf '✅ %s\n' "$*"; log_line OK "$*"; }
+err() { printf '❌ %s\n' "$*" >&2; log_line ERROR "$*"; }
+warn() { printf '⚠️  %s\n' "$*"; log_line WARN "$*"; }
 
 pause_and_exit() {
   local code="${1:-0}"
   echo
-  read -r -p "按回车键关闭窗口..." _ || true
+  echo "日志文件：$LOG_PATH"
+  if [[ "$GUI_MODE" != "1" ]]; then
+    read -r -p "按回车键关闭窗口..." _ || true
+  fi
   exit "$code"
 }
 
@@ -41,13 +74,30 @@ need_command() {
   command -v "$1" >/dev/null 2>&1 || { err "缺少系统命令：$1"; pause_and_exit 1; }
 }
 
-need_command curl
-need_command awk
-need_command shasum
-need_command sed
-need_command grep
-need_command mktemp
-need_command sudo
+shell_quote() {
+  printf '%q' "$1"
+}
+
+escape_for_applescript() {
+  python3 - "$1" <<'PY'
+import sys
+s = sys.argv[1].replace("\\", "\\\\").replace('"', '\\"')
+print(s)
+PY
+}
+
+run_admin_shell() {
+  local cmd="$1"
+  if [[ "$GUI_MODE" == "1" ]]; then
+    local escaped
+    escaped="$(escape_for_applescript "$cmd")"
+    osascript <<APPLESCRIPT
+do shell script "$escaped" with administrator privileges
+APPLESCRIPT
+  else
+    sudo /bin/bash -lc "$cmd"
+  fi
+}
 
 node_usable() {
   if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
@@ -89,7 +139,7 @@ install_system_node() {
   ok "Node.js 安装包校验通过"
 
   log "开始系统级安装 Node.js（会弹出管理员授权）..."
-  sudo installer -pkg "$pkg_path" -target /
+  run_admin_shell "/usr/sbin/installer -pkg $(shell_quote "$pkg_path") -target /"
   rm -rf "$tmp_dir"
   hash -r
 
@@ -104,15 +154,7 @@ show_npm_network_help() {
   local registry="$1"
   err "无法连接 npm 源：$registry"
   warn "这通常是当前网络、DNS 或代理导致的，Codex CLI 还没有开始安装。"
-  echo
-  echo "可以按下面顺序处理后重新运行安装器："
-  echo "1. 打开浏览器访问 ${registry}，确认当前网络可以访问。"
-  echo "2. 如果正在使用公司网络、校园网、代理或 VPN，请切换网络，或确认代理已开启。"
-  echo "3. 如果 npm 配过代理但已经失效，请在终端执行："
-  echo "   npm config delete proxy"
-  echo "   npm config delete https-proxy"
-  echo "4. 如果你有可用的 npm 镜像源，可以先执行："
-  echo "   npm config set registry <你的 npm 镜像源地址>"
+  log "可切换网络、检查代理，或配置可用 npm 镜像源后重新运行安装器。"
 }
 
 get_npm_registry() {
@@ -132,6 +174,13 @@ check_npm_registry_access() {
     show_npm_network_help "$registry"
     pause_and_exit 1
   fi
+}
+
+json_escape() {
+  python3 - "$1" <<'PY'
+import json, sys
+print(json.dumps(sys.argv[1], ensure_ascii=False)[1:-1])
+PY
 }
 
 load_existing_api_key() {
@@ -170,6 +219,28 @@ prompt_codex_config() {
   [[ -n "$CODEX_API_KEY" ]] || { err "API Key 不能为空。"; pause_and_exit 1; }
 }
 
+resolve_codex_api_key() {
+  load_existing_api_key
+  if [[ -n "$CODEX_API_KEY_FILE" ]]; then
+    if [[ -f "$CODEX_API_KEY_FILE" ]]; then
+      CODEX_API_KEY="$(cat "$CODEX_API_KEY_FILE")"
+      rm -f "$CODEX_API_KEY_FILE"
+    else
+      err "找不到 API Key 临时文件。"
+      pause_and_exit 1
+    fi
+  fi
+  if [[ -n "$CODEX_API_KEY" ]]; then
+    return
+  fi
+  if [[ "$REUSE_SAVED_KEY" == "1" && -n "$EXISTING_API_KEY" ]]; then
+    CODEX_API_KEY="$EXISTING_API_KEY"
+    return
+  fi
+  err "API Key 不能为空。"
+  pause_and_exit 1
+}
+
 mask_key() {
   local key="$1"
   local len=${#key}
@@ -186,7 +257,7 @@ install_codex_cli() {
   registry="$(get_npm_registry)"
   check_npm_registry_access "$registry"
   npm_log="$(mktemp)"
-  if ! sudo "$NPM_BIN" install -g --registry "$registry" "$CODEX_PKG" 2>&1 | tee "$npm_log"; then
+  if ! run_admin_shell "$(shell_quote "$NPM_BIN") install -g --registry $(shell_quote "$registry") $(shell_quote "$CODEX_PKG")" 2>&1 | tee "$npm_log"; then
     if grep -Eqi 'ENOTFOUND|getaddrinfo|registry\.npmjs\.org|network connectivity|proxy' "$npm_log"; then
       show_npm_network_help "$(get_npm_registry)"
     else
@@ -196,6 +267,9 @@ install_codex_cli() {
     rm -f "$npm_log"
     pause_and_exit 1
   fi
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && log "$line"
+  done < "$npm_log"
   rm -f "$npm_log"
   hash -r
   ok "Codex CLI：$(codex --version)"
@@ -221,7 +295,6 @@ model = "${DEFAULT_MODEL}"
 review_model = "${DEFAULT_MODEL}"
 model_reasoning_effort = "${DEFAULT_REASONING}"
 disable_response_storage = true
-network_access = "${DEFAULT_NETWORK_ACCESS}"
 model_context_window = ${DEFAULT_CONTEXT_WINDOW}
 model_auto_compact_token_limit = ${DEFAULT_AUTO_COMPACT_TOKEN_LIMIT}
 approval_policy = "${DEFAULT_APPROVAL_POLICY}"
@@ -237,9 +310,11 @@ wire_api = "responses"
 requires_openai_auth = true
 EOF
 
+  local escaped_key
+  escaped_key="$(json_escape "$CODEX_API_KEY")"
   cat > "$codex_dir/auth.json" <<EOF
 {
-  "OPENAI_API_KEY": "${CODEX_API_KEY}"
+  "OPENAI_API_KEY": "${escaped_key}"
 }
 EOF
 
@@ -256,24 +331,129 @@ verify_everything() {
   ok "Codex CLI：$(codex --version)"
   ok "Model：$DEFAULT_MODEL"
   ok "Base URL：$CODEX_BASE_URL"
+  ok "Sandbox：$DEFAULT_SANDBOX_MODE / $DEFAULT_APPROVAL_POLICY"
   ok "API Key：$(mask_key "$CODEX_API_KEY")"
   warn "提示：首次执行 codex 时，如服务端策略不同，可能仍会要求重新登录。"
 }
 
+run_install() {
+  log "官方安装文档：https://developers.openai.com/codex/cli"
+  log "日志文件：$LOG_PATH"
+  if [[ "$GUI_MODE" == "1" ]]; then
+    resolve_codex_api_key
+  else
+    prompt_codex_config
+  fi
+  log "已读取 API Key：$(mask_key "$CODEX_API_KEY")"
+  install_system_node
+  install_codex_cli
+  write_codex_config
+  verify_everything
+  ok "安装完成，现在可以直接输入 codex 使用。"
+}
+
+run_gui() {
+  local self
+  self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+  osascript - "$self" "$LOG_PATH" <<'APPLESCRIPT'
+on run argv
+  set scriptPath to item 1 of argv
+  set logPath to item 2 of argv
+  set reuseSaved to false
+
+  set promptText to "请输入 OpenAI API Key。安装器会检测 Node.js、安装 Codex CLI、写入配置并校验结果。"
+  set dialogResult to display dialog promptText default answer "" buttons {"取消", "复用已保存 Key", "开始安装"} default button "开始安装" cancel button "取消" with title "OpenAI Codex 安装器" with hidden answer
+  set buttonName to button returned of dialogResult
+  set apiKey to text returned of dialogResult
+  if buttonName is "复用已保存 Key" then
+    set reuseSaved to true
+  end if
+  if apiKey is "" and reuseSaved is false then
+    display alert "请输入 OpenAI API Key。" as warning
+    return
+  end if
+
+  set eventFile to do shell script "mktemp /tmp/codex-installer-events.XXXXXX"
+  set quotedScript to quoted form of scriptPath
+  set quotedEvent to quoted form of eventFile
+  set keyFile to do shell script "mktemp /tmp/codex-installer-key.XXXXXX"
+  do shell script "chmod 600 " & quoted form of keyFile
+  do shell script "cat > " & quoted form of keyFile & " <<'EOF_KEY'" & linefeed & apiKey & linefeed & "EOF_KEY"
+  set quotedKeyFile to quoted form of keyFile
+  set reuseArg to ""
+  if reuseSaved then set reuseArg to " --reuse-saved-key"
+  set cmd to "GUI_EVENT_FILE=" & quotedEvent & " " & quotedScript & " --gui --api-key-file=" & quotedKeyFile & reuseArg & " >/dev/null 2>&1 & echo $!"
+  set pidText to do shell script cmd
+
+  set lastSize to 0
+  set outputText to "正在安装，请不要关闭窗口..." & linefeed
+  repeat
+    delay 1
+    try
+      set newText to do shell script "if [ -f " & quotedEvent & " ]; then tail -c +" & (lastSize + 1) & " " & quotedEvent & "; fi"
+      if newText is not "" then
+        set outputText to outputText & newText
+        set lastSize to (do shell script "wc -c < " & quotedEvent) as integer
+      end if
+    end try
+
+    try
+      do shell script "kill -0 " & pidText
+      set stillRunning to true
+    on error
+      set stillRunning to false
+    end try
+
+    if stillRunning is false then exit repeat
+  end repeat
+
+  try
+    set finalText to do shell script "cat " & quotedEvent
+    if finalText is not "" then set outputText to finalText
+  end try
+
+  set failed to false
+  try
+    do shell script "grep -q '^ERROR	' " & quotedEvent
+    set failed to true
+  end try
+
+  if failed then
+    display dialog "安装失败。日志文件：" & logPath & linefeed & linefeed & outputText buttons {"关闭"} default button "关闭" with title "OpenAI Codex 安装器"
+  else
+    display dialog "安装完成。现在可以在终端输入 codex 使用。" & linefeed & linefeed & outputText buttons {"关闭"} default button "关闭" with title "OpenAI Codex 安装器"
+  end if
+end run
+APPLESCRIPT
+}
+
 main() {
+  need_command curl
+  need_command awk
+  need_command shasum
+  need_command sed
+  need_command grep
+  need_command mktemp
+  need_command sudo
+  need_command python3
+
+  if [[ "$GUI_MODE" == "1" ]]; then
+    run_install
+    return
+  fi
+
+  if [[ "${1:-}" == "--app-gui" ]]; then
+    run_gui
+    return
+  fi
+
   clear || true
   echo "========================================"
   echo "  $SCRIPT_NAME"
   echo "========================================"
   echo
-  log "官方安装文档：https://developers.openai.com/codex/cli"
-  prompt_codex_config
-  install_system_node
-  install_codex_cli
-  write_codex_config
-  verify_everything
+  run_install
   echo
-  ok "安装完成，现在可以直接输入 codex 使用。"
   pause_and_exit 0
 }
 

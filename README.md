@@ -1,20 +1,36 @@
-# glm-claude-auto-install
+<a id="glm-claude-auto-install"></a>
 
-> 给新手准备的一键安装工具页：按步骤下载、双击、输入信息，就能完成安装。
+<div align="center">
 
+# AI 编程工具 · 新手安装器
+
+**跟着下载和输入步骤，完成对应工具的本机安装。**
+
+新手引导 · 安装器选择 · 参数输入 · 本地运行
+
+[![中文说明](https://img.shields.io/badge/%E8%AF%B4%E6%98%8E-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-059669)](#readme-detail-20)
+[![项目类型](https://img.shields.io/badge/%E9%A1%B9%E7%9B%AE-%E5%B7%A5%E5%85%B7-6366f1)](#readme-detail-20)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-supported-black?logo=apple)](./scripts/macos)
 [![Windows](https://img.shields.io/badge/Windows-supported-blue?logo=windows)](./scripts/windows)
 [![Codex CLI](https://img.shields.io/badge/Codex%20CLI-OpenAI-412991)](https://developers.openai.com/codex/cli)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-GLM%20helper-orange)](https://docs.bigmodel.cn/cn/coding-plan/quick-start)
 
+[✨ 核心特性](#readme-detail-20) · [✅ 适合谁用](#readme-detail-22) · [🚀 新手只要 3 步](#readme-detail-24) · [🧩 模块速查](#readme-detail-44) · [🔒 安全说明](#readme-detail-48) · [🚀 快速开始](#readme-detail-26)
 
+</div>
 
-[功能亮点](#readme-section-1) · [适合谁用](#readme-section-2) · [新手只要 3 步](#readme-section-3) · [给第一次使用的人一句话建议](#readme-section-6) · [先看这里](#readme-section-8) · [仓库导航](#readme-section-13) · [常见问题](#readme-section-14)
+---
+
+> 给新手准备的一键安装工具页：按步骤下载、双击、输入信息，就能完成安装。
 
 <a id="readme-section-1"></a>
 
-## 功能亮点
+<a id="功能亮点"></a>
+
+<a id="readme-detail-20"></a>
+
+## ✨ 核心特性
 
 - 新手友好的双击安装入口
 - 自动检测并安装 Node.js
@@ -26,7 +42,11 @@
 
 <a id="readme-section-2"></a>
 
-## 适合谁用
+<a id="适合谁用"></a>
+
+<a id="readme-detail-22"></a>
+
+## ✅ 适合谁用
 
 - 不会自己配 Node.js 的新手
 - 不想手动敲很多命令的用户
@@ -35,7 +55,11 @@
 
 <a id="readme-section-3"></a>
 
-## 新手只要 3 步
+<a id="新手只要-3-步"></a>
+
+<a id="readme-detail-24"></a>
+
+## 🚀 新手只要 3 步
 
 ### 第 1 步：先确认你要装哪个
 
@@ -58,7 +82,13 @@
 
 <a id="readme-section-4"></a>
 
-## 快速开始
+<a id="快速开始"></a>
+
+<a id="readme-detail-26"></a>
+
+## 🚀 快速开始
+
+从下面的现有入口开始，按顺序准备环境、配置并完成首次运行。
 
 ### 安装 GLM Coding Plan + Claude Code
 
@@ -94,10 +124,15 @@
 5. 根据窗口提示输入需要的信息
 6. 等它自动安装完成
 
-
 <a id="readme-section-5"></a>
 
-## 两类安装器分别会让用户输入什么
+<a id="两类安装器分别会让用户输入什么"></a>
+
+<a id="readme-detail-28"></a>
+
+## 🚀 两类安装器分别会让用户输入什么
+
+从下面的现有入口开始，按顺序准备环境、配置并完成首次运行。
 
 ### GLM Coding Plan + Claude Code
 
@@ -128,20 +163,26 @@
 - `~/.codex/config.toml` 写入
 - `~/.codex/auth.json` 写入
 
-
 <a id="readme-section-6"></a>
 
-## 给第一次使用的人一句话建议
+<a id="给第一次使用的人一句话建议"></a>
+
+<a id="readme-detail-30"></a>
+
+## 🚀 给第一次使用的人一句话建议
 
 - 不要下载 `Source code`
 - 直接点上面的下载链接
 - 下载到本地后按系统双击执行
 - 跟着提示一步一步填就行
 
-
 <a id="readme-section-7"></a>
 
-## 使用说明
+<a id="使用说明"></a>
+
+<a id="readme-detail-32"></a>
+
+## 📚 使用说明
 
 - GLM 安装器基于官方 Coding Tool Helper 流程与 Node.js 官方安装包。
 - Codex 安装器基于官方 npm 安装路径，并自动写入本地配置。
@@ -150,7 +191,11 @@
 
 <a id="readme-section-8"></a>
 
-## 先看这里
+<a id="先看这里"></a>
+
+<a id="readme-detail-34"></a>
+
+## 📌 先看这里
 
 这个仓库一共提供两类一键安装器：
 
@@ -159,10 +204,13 @@
 
 如果你的电脑里还没有完整的 Node.js，安装器会先自动补齐，再继续安装。
 
-
 <a id="readme-section-9"></a>
 
-## 我该下载哪个
+<a id="我该下载哪个"></a>
+
+<a id="readme-detail-36"></a>
+
+## 📌 我该下载哪个
 
 如果你只是想先把工具装好，直接按下面选就行：
 
@@ -186,10 +234,13 @@
 
 如果你以前装过旧版 GLM 环境，后面确实需要清理旧版本，再去仓库里的 `scripts/` 目录找清理脚本就可以。
 
-
 <a id="readme-section-10"></a>
 
-## 下载后会发生什么
+<a id="下载后会发生什么"></a>
+
+<a id="readme-detail-38"></a>
+
+## 📌 下载后会发生什么
 
 安装器会自动帮用户完成这些事：
 
@@ -199,16 +250,23 @@
 - 自动写入本地配置文件
 - 安装前自动备份旧配置
 
-
 <a id="readme-section-11"></a>
 
-## 版本说明
+<a id="版本说明"></a>
+
+<a id="readme-detail-40"></a>
+
+## ⬆️ 版本说明
 
 - [v0.1.9](./docs/releases/v0.1.9.md)
 
 <a id="readme-section-12"></a>
 
-## 参考资料
+<a id="参考资料"></a>
+
+<a id="readme-detail-42"></a>
+
+## 📚 参考资料
 
 - [GLM Coding Plan 快速开始](https://docs.bigmodel.cn/cn/coding-plan/quick-start)
 - [GLM 文档索引](https://docs.bigmodel.cn/llms.txt)
@@ -218,17 +276,27 @@
 
 <a id="readme-section-13"></a>
 
-## 仓库导航
+<a id="仓库导航"></a>
 
-| 入口 | 内容 |
-| --- | --- |
-| [`assets/`](assets/) | 项目图片与静态素材 |
-| [`docs/`](docs/) | 项目说明与参考文档 |
-| [`scripts/`](scripts/) | 开发与维护脚本 |
+<a id="readme-detail-44"></a>
+
+## 🧩 模块速查
+
+按要处理的工作选择入口，先看模块职责，再进入对应文件或目录。
+
+| 模块入口 | 负责什么 | 什么时候看 |
+| --- | --- | --- |
+| [`assets/`](assets/) | 项目图片与静态素材 | 维护图片、静态文件和展示素材 |
+| [`docs/`](docs/) | 项目说明与参考文档 | 查阅运行、设计与维护约定 |
+| [`scripts/`](scripts/) | 开发与维护脚本 | 查找构建、验证或维护的现有命令 |
 
 <a id="readme-section-14"></a>
 
-## 常见问题
+<a id="常见问题"></a>
+
+<a id="readme-detail-46"></a>
+
+## ❓ 常见问题
 
 ### 为什么 release 页面里还有 Source code (zip / tar.gz)
 
@@ -274,10 +342,13 @@ npm config set registry <你的 npm 镜像源地址>
 - 用 mac → 选 `.command`
 - 用 Windows → 选 `.zip`
 
-
 <a id="readme-section-15"></a>
 
-## 安全说明
+<a id="安全说明"></a>
+
+<a id="readme-detail-48"></a>
+
+## 🔒 安全说明
 
 - 不要把真实 API Key 提交到仓库。
 - 安装器会在写入前备份旧配置。
@@ -286,19 +357,32 @@ npm config set registry <你的 npm 镜像源地址>
 
 <a id="readme-section-16"></a>
 
-## 贡献
+<a id="贡献"></a>
+
+<a id="readme-detail-50"></a>
+
+## 🤝 贡献
 
 请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 <a id="readme-section-17"></a>
 
-## 许可证
+<a id="许可证"></a>
+
+<a id="readme-detail-52"></a>
+
+## 📄 许可证
 
 MIT License，见 [LICENSE](./LICENSE)。
 
 <a id="readme-section-18"></a>
 
-## 作者
+<a id="作者"></a>
+
+<a id="readme-detail-54"></a>
+
+## 👤 作者
+
 - X: [Mileson07](https://x.com/Mileson07)
 - 小红书: [超级峰](https://xhslink.com/m/4LnJ9aB1f97)
 - 抖音: [超级峰](https://v.douyin.com/rH645q7trd8/)

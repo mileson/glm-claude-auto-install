@@ -10,16 +10,30 @@
 
 [English](./README_EN.md)
 
-## 先看这里
+[功能亮点](#readme-section-1) · [适合谁用](#readme-section-2) · [新手只要 3 步](#readme-section-3) · [给第一次使用的人一句话建议](#readme-section-6) · [先看这里](#readme-section-8) · [仓库导航](#readme-section-13) · [常见问题](#readme-section-14)
 
-这个仓库一共提供两类一键安装器：
+<a id="readme-section-1"></a>
 
-1. **GLM Coding Plan + Claude Code**
-2. **OpenAI Codex CLI**
+## 功能亮点
 
-如果你的电脑里还没有完整的 Node.js，安装器会先自动补齐，再继续安装。
+- 新手友好的双击安装入口
+- 自动检测并安装 Node.js
+- 自动安装 GLM Claude / OpenAI Codex
+- 自动写入本地配置
+- 自动备份旧配置
+- 提供旧版 GLM 环境清理脚本
+- 同时支持 macOS 与 Windows
 
----
+<a id="readme-section-2"></a>
+
+## 适合谁用
+
+- 不会自己配 Node.js 的新手
+- 不想手动敲很多命令的用户
+- 需要把安装流程交给别人执行的人
+- 想降低远程协助成本的人
+
+<a id="readme-section-3"></a>
 
 ## 新手只要 3 步
 
@@ -39,9 +53,10 @@
 - 你要安装 Codex 命令行工具
 - 你只想让用户输入 API Key，其他配置都自动带好
 
----
 
 ### 第 2 步：按你的系统点击下载
+
+<a id="readme-section-4"></a>
 
 ## 快速开始
 
@@ -59,7 +74,6 @@
 | macOS | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-App-Double-Click.zip) |
 | Windows | [下载：OpenAI Codex 安装器（下载后双击执行）](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip) |
 
----
 
 ### 第 3 步：下载后直接执行
 
@@ -80,45 +94,8 @@
 5. 根据窗口提示输入需要的信息
 6. 等它自动安装完成
 
----
 
-## 我该下载哪个
-
-如果你只是想先把工具装好，直接按下面选就行：
-
-- **我用 mac，想装智谱 Claude Code**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-App-Double-Click.zip)
-
-- **我用 Windows，想装智谱 Claude Code**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip)
-
-- **我用 mac，想装 OpenAI Codex**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-App-Double-Click.zip)
-
-- **我用 Windows，想装 OpenAI Codex**  
-  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip)
-
-如果你现在只是第一次安装，看到这 4 个文件就够了，其他文件你可以先不用管。
-
-如果你想先打开完整下载页，也可以点这里：
-
-- [打开最新版下载页](https://github.com/mileson/glm-claude-auto-install/releases/latest)
-
-如果你以前装过旧版 GLM 环境，后面确实需要清理旧版本，再去仓库里的 `scripts/` 目录找清理脚本就可以。
-
----
-
-## 下载后会发生什么
-
-安装器会自动帮用户完成这些事：
-
-- 检查电脑里有没有 `node`、`npm`、`npx`
-- 没有的话自动安装 **系统级 Node.js**
-- 自动安装对应 CLI
-- 自动写入本地配置文件
-- 安装前自动备份旧配置
-
----
+<a id="readme-section-5"></a>
 
 ## 两类安装器分别会让用户输入什么
 
@@ -151,7 +128,105 @@
 - `~/.codex/config.toml` 写入
 - `~/.codex/auth.json` 写入
 
----
+
+<a id="readme-section-6"></a>
+
+## 给第一次使用的人一句话建议
+
+- 不要下载 `Source code`
+- 直接点上面的下载链接
+- 下载到本地后按系统双击执行
+- 跟着提示一步一步填就行
+
+
+<a id="readme-section-7"></a>
+
+## 使用说明
+
+- GLM 安装器基于官方 Coding Tool Helper 流程与 Node.js 官方安装包。
+- Codex 安装器基于官方 npm 安装路径，并自动写入本地配置。
+- Codex CLI 可在 Windows 原生 PowerShell / Windows Terminal 中使用；Windows 11 最稳，较新的 Windows 10 需要 1809 或更新版本。需要 Linux 工具链时再选择 WSL2。
+- 如果你是给别人分发，可以直接把上面的下载链接发给对方。
+
+<a id="readme-section-8"></a>
+
+## 先看这里
+
+这个仓库一共提供两类一键安装器：
+
+1. **GLM Coding Plan + Claude Code**
+2. **OpenAI Codex CLI**
+
+如果你的电脑里还没有完整的 Node.js，安装器会先自动补齐，再继续安装。
+
+
+<a id="readme-section-9"></a>
+
+## 我该下载哪个
+
+如果你只是想先把工具装好，直接按下面选就行：
+
+- **我用 mac，想装智谱 Claude Code**  
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-macOS-App-Double-Click.zip)
+
+- **我用 Windows，想装智谱 Claude Code**  
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/GLM-Claude-Windows-Download-Then-Double-Click.zip)
+
+- **我用 mac，想装 OpenAI Codex**  
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-macOS-App-Double-Click.zip)
+
+- **我用 Windows，想装 OpenAI Codex**  
+  [点这里直接下载](https://github.com/mileson/glm-claude-auto-install/releases/latest/download/OpenAI-Codex-Windows-Download-Then-Double-Click.zip)
+
+如果你现在只是第一次安装，看到这 4 个文件就够了，其他文件你可以先不用管。
+
+如果你想先打开完整下载页，也可以点这里：
+
+- [打开最新版下载页](https://github.com/mileson/glm-claude-auto-install/releases/latest)
+
+如果你以前装过旧版 GLM 环境，后面确实需要清理旧版本，再去仓库里的 `scripts/` 目录找清理脚本就可以。
+
+
+<a id="readme-section-10"></a>
+
+## 下载后会发生什么
+
+安装器会自动帮用户完成这些事：
+
+- 检查电脑里有没有 `node`、`npm`、`npx`
+- 没有的话自动安装 **系统级 Node.js**
+- 自动安装对应 CLI
+- 自动写入本地配置文件
+- 安装前自动备份旧配置
+
+
+<a id="readme-section-11"></a>
+
+## 版本说明
+
+- [v0.1.9](./docs/releases/v0.1.9.md)
+
+<a id="readme-section-12"></a>
+
+## 参考资料
+
+- [GLM Coding Plan 快速开始](https://docs.bigmodel.cn/cn/coding-plan/quick-start)
+- [GLM 文档索引](https://docs.bigmodel.cn/llms.txt)
+- [OpenAI Codex CLI 文档](https://developers.openai.com/codex/cli)
+- [OpenAI Codex 鉴权文档](https://developers.openai.com/codex/auth)
+- [Node.js 下载目录](https://nodejs.org/dist/)
+
+<a id="readme-section-13"></a>
+
+## 仓库导航
+
+| 入口 | 内容 |
+| --- | --- |
+| [`assets/`](assets/) | 项目图片与静态素材 |
+| [`docs/`](docs/) | 项目说明与参考文档 |
+| [`scripts/`](scripts/) | 开发与维护脚本 |
+
+<a id="readme-section-14"></a>
 
 ## 常见问题
 
@@ -199,40 +274,8 @@ npm config set registry <你的 npm 镜像源地址>
 - 用 mac → 选 `.command`
 - 用 Windows → 选 `.zip`
 
----
 
-## 给第一次使用的人一句话建议
-
-- 不要下载 `Source code`
-- 直接点上面的下载链接
-- 下载到本地后按系统双击执行
-- 跟着提示一步一步填就行
-
----
-
-## 适合谁用
-
-- 不会自己配 Node.js 的新手
-- 不想手动敲很多命令的用户
-- 需要把安装流程交给别人执行的人
-- 想降低远程协助成本的人
-
-## 功能亮点
-
-- 新手友好的双击安装入口
-- 自动检测并安装 Node.js
-- 自动安装 GLM Claude / OpenAI Codex
-- 自动写入本地配置
-- 自动备份旧配置
-- 提供旧版 GLM 环境清理脚本
-- 同时支持 macOS 与 Windows
-
-## 使用说明
-
-- GLM 安装器基于官方 Coding Tool Helper 流程与 Node.js 官方安装包。
-- Codex 安装器基于官方 npm 安装路径，并自动写入本地配置。
-- Codex CLI 可在 Windows 原生 PowerShell / Windows Terminal 中使用；Windows 11 最稳，较新的 Windows 10 需要 1809 或更新版本。需要 Linux 工具链时再选择 WSL2。
-- 如果你是给别人分发，可以直接把上面的下载链接发给对方。
+<a id="readme-section-15"></a>
 
 ## 安全说明
 
@@ -241,25 +284,19 @@ npm config set registry <你的 npm 镜像源地址>
 - `~/.codex/auth.json`、`~/.chelper/config.yaml`、Claude 配置文件都应只保留在本地。
 - 如发现安全问题，请查看 [SECURITY.md](./SECURITY.md)。
 
-## 版本说明
-
-- [v0.1.9](./docs/releases/v0.1.9.md)
-
-## 参考资料
-
-- [GLM Coding Plan 快速开始](https://docs.bigmodel.cn/cn/coding-plan/quick-start)
-- [GLM 文档索引](https://docs.bigmodel.cn/llms.txt)
-- [OpenAI Codex CLI 文档](https://developers.openai.com/codex/cli)
-- [OpenAI Codex 鉴权文档](https://developers.openai.com/codex/auth)
-- [Node.js 下载目录](https://nodejs.org/dist/)
+<a id="readme-section-16"></a>
 
 ## 贡献
 
 请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
+<a id="readme-section-17"></a>
+
 ## 许可证
 
 MIT License，见 [LICENSE](./LICENSE)。
+
+<a id="readme-section-18"></a>
 
 ## 作者
 - X: [Mileson07](https://x.com/Mileson07)

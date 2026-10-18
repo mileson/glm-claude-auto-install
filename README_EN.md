@@ -10,14 +10,9 @@
 
 [简体中文](./README.md)
 
-## What this project does
+[Features](#readme-section-1) · [Quick Start](#readme-section-2) · [What this project does](#readme-section-3) · [Project structure](#readme-section-9) · [Release notes](#readme-section-10) · [Security](#readme-section-11) · [Contributing](#readme-section-12)
 
-This repository packages beginner-friendly installers for two common onboarding tasks:
-
-- Install **GLM Coding Plan + Claude Code** with automatic Node.js detection and setup.
-- Install **OpenAI Codex CLI** with automatic Node.js detection and a preset local config, so the user only needs to enter an API key.
-
-The scripts are built for users who do **not** already have a complete Node.js environment.
+<a id="readme-section-1"></a>
 
 ## Features
 
@@ -29,41 +24,7 @@ The scripts are built for users who do **not** already have a complete Node.js e
 - Includes cleanup scripts for removing the old managed GLM Node runtime.
 - Provides separate macOS and Windows entry points.
 
-## Supported tools
-
-### GLM Coding Plan + Claude Code
-
-- Claude Code installer for GLM Coding Plan China.
-- Detects missing Node.js and installs it automatically.
-- Writes user config for `coding-helper`, `~/.claude/settings.json`, and `~/.claude.json`.
-
-### OpenAI Codex CLI
-
-- Installs `@openai/codex` with npm.
-- Reuses the current local Codex-style defaults for Base URL, model, and core settings.
-- Only asks the user for an API key during setup.
-- Writes `~/.codex/config.toml` and `~/.codex/auth.json`.
-- Intended for users who run Codex through an OpenAI-compatible gateway.
-
-## Project structure
-
-```text
-scripts/
-  macos/
-    install-glm-claude.command
-    cleanup-old-glm-managed-install.command
-    install-openai-codex.command
-  windows/
-    install-glm-claude.bat
-    install-glm-claude.ps1
-    cleanup-old-glm-managed-install.bat
-    cleanup-old-glm-managed-install.ps1
-    install-openai-codex.bat
-    install-openai-codex.ps1
-
-docs/releases/
-  v0.1.9.md
-```
+<a id="readme-section-2"></a>
 
 ## Quick Start
 
@@ -128,6 +89,37 @@ Double-click:
 scripts\windows\install-openai-codex.bat
 ```
 
+<a id="readme-section-3"></a>
+
+## What this project does
+
+This repository packages beginner-friendly installers for two common onboarding tasks:
+
+- Install **GLM Coding Plan + Claude Code** with automatic Node.js detection and setup.
+- Install **OpenAI Codex CLI** with automatic Node.js detection and a preset local config, so the user only needs to enter an API key.
+
+The scripts are built for users who do **not** already have a complete Node.js environment.
+
+<a id="readme-section-4"></a>
+
+## Supported tools
+
+### GLM Coding Plan + Claude Code
+
+- Claude Code installer for GLM Coding Plan China.
+- Detects missing Node.js and installs it automatically.
+- Writes user config for `coding-helper`, `~/.claude/settings.json`, and `~/.claude.json`.
+
+### OpenAI Codex CLI
+
+- Installs `@openai/codex` with npm.
+- Reuses the current local Codex-style defaults for Base URL, model, and core settings.
+- Only asks the user for an API key during setup.
+- Writes `~/.codex/config.toml` and `~/.codex/auth.json`.
+- Intended for users who run Codex through an OpenAI-compatible gateway.
+
+<a id="readme-section-5"></a>
+
 ## Cleanup
 
 If you previously used the older managed GLM Node runtime, run the cleanup entry after system-level installation succeeds.
@@ -147,12 +139,16 @@ Double-click:
 scripts\windows\cleanup-old-glm-managed-install.bat
 ```
 
+<a id="readme-section-6"></a>
+
 ## Notes
 
 - The GLM installer is based on the official Coding Tool Helper flow and Node.js official distribution packages.
 - The Codex installer follows the official Codex CLI npm installation path and uses a local file-based config/auth setup.
 - Windows support for Codex CLI should be treated as **experimental**; WSL2 is still the safest path for daily use.
 - The Codex auth file format used here is based on a working local Codex setup plus the official Codex config model-provider rules.
+
+<a id="readme-section-7"></a>
 
 ## Troubleshooting
 
@@ -175,16 +171,7 @@ If you have a working npm mirror, set it before running the installer:
 npm config set registry <your npm mirror URL>
 ```
 
-## Security
-
-- Never commit real API keys.
-- The scripts back up existing config before writing new files.
-- Generated `~/.codex/auth.json`, `~/.chelper/config.yaml`, and Claude settings should stay local.
-- If you discover a security issue, please follow [SECURITY.md](./SECURITY.md).
-
-## Release notes
-
-- [v0.1.9](./docs/releases/v0.1.9.md)
+<a id="readme-section-8"></a>
 
 ## References
 
@@ -194,13 +181,56 @@ npm config set registry <your npm mirror URL>
 - [OpenAI Codex authentication docs](https://developers.openai.com/codex/auth)
 - [Node.js downloads](https://nodejs.org/dist/)
 
+<a id="readme-section-9"></a>
+
+## Project structure
+
+```text
+scripts/
+  macos/
+    install-glm-claude.command
+    cleanup-old-glm-managed-install.command
+    install-openai-codex.command
+  windows/
+    install-glm-claude.bat
+    install-glm-claude.ps1
+    cleanup-old-glm-managed-install.bat
+    cleanup-old-glm-managed-install.ps1
+    install-openai-codex.bat
+    install-openai-codex.ps1
+
+docs/releases/
+  v0.1.9.md
+```
+
+<a id="readme-section-10"></a>
+
+## Release notes
+
+- [v0.1.9](./docs/releases/v0.1.9.md)
+
+<a id="readme-section-11"></a>
+
+## Security
+
+- Never commit real API keys.
+- The scripts back up existing config before writing new files.
+- Generated `~/.codex/auth.json`, `~/.chelper/config.yaml`, and Claude settings should stay local.
+- If you discover a security issue, please follow [SECURITY.md](./SECURITY.md).
+
+<a id="readme-section-12"></a>
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+<a id="readme-section-13"></a>
+
 ## License
 
 MIT License. See [LICENSE](./LICENSE).
+
+<a id="readme-section-14"></a>
 
 ## Author
 - X: [Mileson07](https://x.com/Mileson07)

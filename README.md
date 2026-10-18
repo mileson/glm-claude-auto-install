@@ -8,7 +8,7 @@
 [![Codex CLI](https://img.shields.io/badge/Codex%20CLI-OpenAI-412991)](https://developers.openai.com/codex/cli)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-GLM%20helper-orange)](https://docs.bigmodel.cn/cn/coding-plan/quick-start)
 
-[English](./README_EN.md)
+
 
 [功能亮点](#readme-section-1) · [适合谁用](#readme-section-2) · [新手只要 3 步](#readme-section-3) · [给第一次使用的人一句话建议](#readme-section-6) · [先看这里](#readme-section-8) · [仓库导航](#readme-section-13) · [常见问题](#readme-section-14)
 
